@@ -27,7 +27,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="kph-topbar">
   <div class="kph-topbar-inner">
-    <span>Free Shipping on orders over ₱2,000</span>
+    <span>Free Shipping on orders over â‚±2,000</span>
     <div class="kph-topbar-mid hide-mobile">
       <span>100% Authentic Product</span>
       <span>1 Year Warranty</span>
@@ -100,15 +100,15 @@
       <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
     </div>
     <p class="kph-footer-note only-mobile">Your one-stop shop for professional gear.</p>
-    <p class="kph-footer-copy">© 2026 KameraPH. All rights reserved.</p>
+    <p class="kph-footer-copy">Â© 2026 KameraPH. All rights reserved.</p>
   </div>
 </footer>
 <!-- ===== END FOOTER ===== -->
 
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-<script src="js/kph-ui.js"></script>
-<script src="js/demo.js"></script>
+<script src="js/config.js?v=2"></script>
+<script src="js/api.js?v=2"></script>
+<script src="js/kph-ui.js?v=2"></script>
+<script src="js/demo.js?v=2"></script>
 <script>
   // UI-first mode: while this is false, the page uses the sample products below.
   // When the catalog API is ready, change it to true.
@@ -158,7 +158,7 @@
         <div class="pc-img">${photo(p)}</div>
         <div class="pc-name">${escapeHtml(p.name)}</div>
         <div><span class="pc-price">${escapeHtml(formatPeso(p.price))}</span>${old}</div>
-        <div class="rating"><span class="stars" aria-hidden="true">★★★★★</span>(${escapeHtml(p.rating)})</div>
+        <div class="rating"><span class="stars" aria-hidden="true">â˜…â˜…â˜…â˜…â˜…</span>(${escapeHtml(p.rating)})</div>
         <button class="btn btn-block btn-sm" type="button" data-add>Add to Cart</button>
       </article>`;
   }
@@ -179,9 +179,11 @@
     document.getElementById("arrivals").innerHTML = data.arrivals.map(productCard).join("");
   }
 
-  document.getElementById("welcome").textContent = "Welcome back, " + KPHDemo.currentUser().FirstName + "!";
+  const curUser = KPHDemo.currentUser();
+  document.getElementById("welcome").textContent = "Welcome back" + (curUser && curUser.FirstName ? ", " + curUser.FirstName : "") + "!";
   document.getElementById("shopNow").href = catalogLink("categories.html");
-  document.getElementById("seeDeals").href = KPH.modules.shopping + "/deals.html";
+  const authTok = window.KPHAuth ? KPHAuth.getToken() : "";
+  document.getElementById("seeDeals").href = KPH.modules.shopping + "/deals.html" + (authTok ? "?token=" + encodeURIComponent(authTok) : "");
 
   // Wishlist hearts and Add to Cart: remembered in this browser by js/demo.js (demo only).
   // The wishlist page shows what you hearted here.

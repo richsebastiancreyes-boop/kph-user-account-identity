@@ -340,8 +340,12 @@ const KPHDemo = (function () {
     currentUser: function () {
       const apiUser = read("kph-user", null);
       if (apiUser && apiUser.UserID) {
-        const roles = Array.isArray(apiUser.Roles) && apiUser.Roles.length ? apiUser.Roles : ["Buyer"];
-        const role = roles.indexOf("Admin") >= 0 ? "Admin" : (roles.indexOf("Seller") >= 0 ? "Seller" : roles[0]);
+        const rawRoles = Array.isArray(apiUser.Roles) && apiUser.Roles.length ? apiUser.Roles : ["Buyer"];
+        const roleNames = rawRoles.map(function (r) {
+          const name = (r && typeof r === "object") ? (r.RoleName || "Buyer") : String(r || "Buyer");
+          return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+        });
+        const role = apiUser.Role || (roleNames.indexOf("Admin") >= 0 ? "Admin" : (roleNames.indexOf("Seller") >= 0 ? "Seller" : roleNames[0]));
         return Object.assign({
           Status: apiUser.AccountStatus || "Active",
           Username: apiUser.Username || nameToUsername(apiUser.FirstName, apiUser.LastName, apiUser.Email),

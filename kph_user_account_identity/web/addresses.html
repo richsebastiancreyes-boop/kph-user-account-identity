@@ -41,7 +41,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="kph-topbar">
   <div class="kph-topbar-inner">
-    <span>Free Shipping on orders over ₱2,000</span>
+    <span>Free Shipping on orders over â‚±2,000</span>
     <div class="kph-topbar-mid hide-mobile">
       <span>100% Authentic Product</span>
       <span>1 Year Warranty</span>
@@ -96,7 +96,7 @@
       <div class="field">
         <label for="loc">Region, Province, City, Barangay</label>
         <button type="button" id="loc" class="loc-btn" aria-expanded="false" aria-controls="locPanel">
-          <span id="locText" class="loc-placeholder">Region › Province › City › Barangay</span>
+          <span id="locText" class="loc-placeholder">Region â€º Province â€º City â€º Barangay</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         </button>
         <div id="locPanel" class="loc-panel" hidden>
@@ -144,15 +144,15 @@
       <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
     </div>
     <p class="kph-footer-note only-mobile">Your one-stop shop for professional gear.</p>
-    <p class="kph-footer-copy">© 2026 KameraPH. All rights reserved.</p>
+    <p class="kph-footer-copy">Â© 2026 KameraPH. All rights reserved.</p>
   </div>
 </footer>
 <!-- ===== END FOOTER ===== -->
 
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-<script src="js/kph-ui.js"></script>
-<script src="js/demo.js"></script>
+<script src="js/config.js?v=2"></script>
+<script src="js/api.js?v=2"></script>
+<script src="js/kph-ui.js?v=2"></script>
+<script src="js/demo.js?v=2"></script>
 <script>
 
   const USE_API = true;
@@ -196,7 +196,7 @@
     }
   };
   const LEVELS = ["Region", "Province", "City", "Barangay"];
-  const ARROW = " › ";
+  const ARROW = " â€º ";
 
   // ---------- Location picker ----------
   let sel = [];      // [region, province, city, barangay]
@@ -217,19 +217,19 @@
   }
 
   function drawPicker() {
-    // Region › Province › City › Barangay 
+    // Region â€º Province â€º City â€º Barangay 
     locTabs.innerHTML = LEVELS.map((name, i) => {
       const label = sel[i] || name;
       const dis = i > sel.length ? " disabled" : "";
       const act = i === level ? " active" : "";
-      return (i ? '<span class="sep" aria-hidden="true">›</span>' : "") +
+      return (i ? '<span class="sep" aria-hidden="true">â€º</span>' : "") +
         '<button type="button" class="loc-tab' + act + '" data-level="' + i + '"' + dis + ">" + escapeHtml(label) + "</button>";
     }).join("");
 
     locOptions.innerHTML = optionsForLevel().map(o =>
       '<li><button type="button" class="loc-option" data-value="' + escapeHtml(o) + '">' +
       "<span>" + escapeHtml(o) + "</span>" +
-      (level < 3 ? '<span class="arrow" aria-hidden="true">›</span>' : "") +
+      (level < 3 ? '<span class="arrow" aria-hidden="true">â€º</span>' : "") +
       "</button></li>").join("");
   }
 
@@ -238,7 +238,7 @@
       locText.textContent = sel.join(ARROW);
       locText.className = "";
     } else {
-      locText.textContent = "Region › Province › City › Barangay";
+      locText.textContent = "Region â€º Province â€º City â€º Barangay";
       locText.className = "loc-placeholder";
     }
   }
