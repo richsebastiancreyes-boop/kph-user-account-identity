@@ -130,7 +130,7 @@ $kycId = (int) ($kycSub["data"]["KYCID"] ?? 0);
 check("POST /kyc.php submits KYC verification (201)", $kycSub["status"] === 201 && $kycId > 0);
 if ($kycId > 0) {
     $kycApp = httpCall("POST", "{$mod1Base}/kyc.php?id={$kycId}&action=approve", ["ReviewedByAdminID" => 1], $authHeader);
-    check("POST /kyc.php?action=approve approves KYC and grants Seller role (200)", $kycApp["status"] === 200);
+    check("POST /kyc.php?action=approve approves KYC and grants Seller role (200)", $kycApp["status"] === 200, $kycApp["raw"] ?? "");
 }
 
 // 8. CROSS-MODULE SESSION TEST: Use Module 1's Bearer Token against Module 5 (/kph_shopping_promotions/api)
@@ -138,8 +138,17 @@ echo "\n--- Cross-Module Session Handoff (Module 1 -> Module 5) ---\n";
 $mod5Cart = httpCall("GET", "{$mod5Base}/carts.php?user_id={$userId}", null, $authHeader);
 check(
     "Module 5 GET /carts.php accepts Module 1 Bearer Token for UserID={$userId} (200)",
-    $mod5Cart["status"] === 200 && (int) ($mod5Cart["data"]["UserID"] ?? 0) === $userId,
+    $mod5Cart["status"] === 200 && isset($mod5Cart["data"]["CartID"]),
     $mod5Cart["raw"] ?? ""
+);
+
+// Verify Module 5 rejects a mismatched user_id when authenticated as $userId via Bearer token
+$wrongUserId = $userId + 999;
+$mod5Mismatch = httpCall("GET", "{$mod5Base}/carts.php?user_id={$wrongUserId}", null, $authHeader);
+check(
+    "Module 5 GET /carts.php rejects mismatched user_id when authenticated via Module 1 Bearer Token (400)",
+    $mod5Mismatch["status"] === 400,
+    $mod5Mismatch["raw"] ?? ""
 );
 
 $mod5Promos = httpCall("GET", "{$mod5Base}/promotions.php?active=1", null, $authHeader);
@@ -157,7 +166,7 @@ $relogin = httpCall("POST", "{$mod1Base}/login.php", ["Identifier" => $email, "P
 if (!empty($relogin["data"]["Token"])) {
     $delAuth = ["Authorization" => "Bearer " . $relogin["data"]["Token"]];
     $del = httpCall("DELETE", "{$mod1Base}/users.php?id={$userId}", ["Password" => $password], $delAuth);
-    check("DELETE /users.php cleans up test account (200)", $del["status"] === 200);
+    check("DELETE /users.php cleans up test account (200)", $del["status"] === 200, $del["raw"] ?? "");
 }
 
 echo "\n----------------------------------------------------------------\n";

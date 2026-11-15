@@ -336,6 +336,20 @@ class User
         }
 
         $this->db->beginTransaction();
+        // Clean up any cross-module shopping carts/items owned by this user if those tables exist
+        foreach (["cart", "shopping_cart"] as $cartTable) {
+            try {
+                $stmtCarts = $this->db->prepare("SELECT CartID FROM `$cartTable` WHERE UserID = ?");
+                $stmtCarts->execute([$userId]);
+                $cartIds = $stmtCarts->fetchAll(PDO::FETCH_COLUMN);
+                if (!empty($cartIds)) {
+                    $in = implode(",", array_fill(0, count($cartIds), "?"));
+                    $this->db->prepare("DELETE FROM `cart_item` WHERE CartID IN ($in)")->execute($cartIds);
+                    $this->db->prepare("DELETE FROM `$cartTable` WHERE UserID = ?")->execute([$userId]);
+                }
+            } catch (Throwable $ignored) {
+            }
+        }
         foreach (["verification_token", "kyc_verification", "auth_identity", "user_address", "user_profile", "user_role"] as $table) {
             $stmt = $this->db->prepare("DELETE FROM `$table` WHERE UserID = ?");
             $stmt->execute([$userId]);

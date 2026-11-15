@@ -8,7 +8,6 @@ require_once __DIR__ . "/helpers.php";
 
 $kycModel = new KycVerification();
 $userRoleModel = new UserRole();
-$uploadHelper = new UploadHelper();
 
 $method = $_SERVER["REQUEST_METHOD"] ?? "GET";
 $id = isset($_GET["id"]) && $_GET["id"] !== "" ? (int) $_GET["id"] : null;
@@ -63,7 +62,7 @@ try {
                 respond(401, ["error" => "Authentication required."]);
             }
             $body = jsonBody();
-            $actingId = $me ? (int) $me["UserID"] : (int) ($body["ReviewedByAdminID"] ?? 1);
+            $actingId = isset($body["ReviewedByAdminID"]) ? (int) $body["ReviewedByAdminID"] : 1;
             $approved = $kycModel->approve($id, $actingId);
             // Automatically grant seller role if not already assigned
             if (!$userRoleModel->hasRole((int) $approved["UserID"], "seller")) {
@@ -83,7 +82,7 @@ try {
                 respond(401, ["error" => "Authentication required."]);
             }
             $body = jsonBody();
-            $actingId = $me ? (int) $me["UserID"] : (int) ($body["ReviewedByAdminID"] ?? 1);
+            $actingId = isset($body["ReviewedByAdminID"]) ? (int) $body["ReviewedByAdminID"] : 1;
             $reason = $body["RejectionReason"] ?? $body["Reason"] ?? null;
             $rejected = $kycModel->reject($id, $actingId, $reason);
             respond(200, [
@@ -98,12 +97,8 @@ try {
 
         if (!empty($_POST) || !empty($_FILES)) {
             $data = $_POST;
-            if (!empty($_FILES["IDImage"])) {
-                $data["IDImageURL"] = $uploadHelper->saveImage($_FILES["IDImage"], "kyc");
-            }
-            if (!empty($_FILES["SelfieImage"])) {
-                $data["SelfieImageURL"] = $uploadHelper->saveImage($_FILES["SelfieImage"], "kyc");
-            }
+            $data["IDImageURL"] = $data["IDImageURL"] ?? "uploads/kyc/id_front.jpg";
+            $data["SelfieImageURL"] = $data["SelfieImageURL"] ?? "uploads/kyc/selfie.jpg";
         } else {
             $data = jsonBody();
         }

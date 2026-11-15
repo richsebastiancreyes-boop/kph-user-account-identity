@@ -241,7 +241,7 @@ class UserAddress
         $row["AddressID"] = (int)$row["AddressID"];
         $row["UserID"] = (int)$row["UserID"];
         $row["IsDefault"] = (int)$row["IsDefault"];
-        $parts = array_filter([$row["RecipientFirstName"] ?? "", $row["RecipientMiddleName"] ?? "", $row["RecipientLastName"] ?? ""], fn($p) => trim((string)$p) !== "");
+        $parts = array_values(array_filter([$row["RecipientFirstName"] ?? "", $row["RecipientMiddleName"] ?? "", $row["RecipientLastName"] ?? ""], fn($p) => trim((string)$p) !== ""));
         if (count($parts) === 2 && $parts[0] === $parts[1]) {
             $row["RecipientFullName"] = $parts[0];
         } else {

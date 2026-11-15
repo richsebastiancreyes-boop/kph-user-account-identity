@@ -25,7 +25,6 @@ require_once __DIR__ . "/../classes/UserRole.php";
 require_once __DIR__ . "/../classes/KycVerification.php";
 require_once __DIR__ . "/../classes/AuthIdentity.php";
 require_once __DIR__ . "/../classes/VerificationToken.php";
-require_once __DIR__ . "/../classes/UploadHelper.php";
 
 function respond(int $status, $data): void
 {
