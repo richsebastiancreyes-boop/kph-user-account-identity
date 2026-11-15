@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home | KameraPH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/kph.css">
+  <link rel="stylesheet" href="css/module.css">
+  <!-- keeps the light/dark choice without a flash -->
+  <script>try{var t=localStorage.getItem("kph-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <style>
+    /* Home page extras (kit colors only) */
+    .hero { display: grid; gap: 12px; padding: 32px; border-left: 4px solid var(--orange); }
+    .hero h1 { font-size: 30px; margin: 0; }
+    .hero p { color: var(--muted); max-width: 560px; margin: 0; }
+    .cat-card { display: grid; align-content: start; gap: 4px; padding: 20px; text-align: center; color: var(--text); }
+    .cat-card:hover { text-decoration: none; border-color: var(--orange); }
+    .cat-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 8px; }
+    .cat-card strong { font-size: 16px; }
+    .cat-card span { font-size: 13px; color: var(--muted); }
+    @media (max-width: 480px) { .hero { padding: 20px; } .hero h1 { font-size: 24px; } }
+  </style>
+</head>
+<body>
+<!-- ===== KAMERAPH HEADER (copy as is, do not edit) ===== -->
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="kph-topbar">
+  <div class="kph-topbar-inner">
+    <span>Free Shipping on orders over ₱2,000</span>
+    <div class="kph-topbar-mid hide-mobile">
+      <span>100% Authentic Product</span>
+      <span>1 Year Warranty</span>
+      <span>Easy Return</span>
+    </div>
+    <span class="hide-mobile">Need Help? 0999 999 9999</span>
+  </div>
+</div>
+<header class="kph-header">
+  <div class="kph-header-inner">
+    <a class="kph-logo" href="#" aria-label="KameraPH home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </a>
+    <nav class="kph-nav" id="kph-nav" aria-label="Main"></nav>
+    <div class="kph-search" id="kph-search">
+      <form id="kph-search-form" role="search">
+        <input type="search" placeholder="Search cameras, lenses, accessories" aria-label="Search">
+        <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      </form>
+    </div>
+    <div class="kph-icons">
+      <button class="icon-btn only-mobile" id="kph-search-toggle" type="button" aria-label="Open search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="kph-theme-toggle" type="button" aria-label="Switch between light and dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <a class="icon-btn" data-kph-link="account" href="#" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="icon-btn" data-kph-link="wishlist" href="#" aria-label="Wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="dot" hidden></span></a>
+      <a class="icon-btn" data-kph-link="cart" href="#" aria-label="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span class="dot" hidden></span></a>
+    </div>
+  </div>
+</header>
+<!-- ===== END HEADER ===== -->
+
+<main id="main" class="container stack">
+
+  <!-- Banner -->
+  <section class="card hero">
+    <p id="welcome" class="muted" style="margin:0"></p>
+    <h1>Capture. Create. Inspire.</h1>
+    <p>Cameras, lenses and accessories from trusted sellers. 100% authentic, with a 1 year warranty.</p>
+    <div class="row">
+      <a class="btn" id="shopNow" href="#">Shop Now</a>
+      <a class="btn btn-outline" id="seeDeals" href="#">See Deals</a>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section>
+    <h2 class="section-title">Shop by category</h2>
+    <div id="categories" class="grid"></div>
+  </section>
+
+  <!-- Feed -->
+  <section>
+    <h2 class="section-title">Popular right now</h2>
+    <div id="popular" class="grid"></div>
+  </section>
+
+  <section>
+    <h2 class="section-title">New arrivals</h2>
+    <div id="arrivals" class="grid"></div>
+  </section>
+
+</main>
+
+<!-- ===== KAMERAPH FOOTER (copy as is, do not edit) ===== -->
+<footer class="kph-footer">
+  <div class="kph-footer-inner">
+    <div class="kph-logo">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </div>
+    <p class="kph-footer-note only-mobile">Your one-stop shop for professional gear.</p>
+    <p class="kph-footer-copy">© 2026 KameraPH. All rights reserved.</p>
+  </div>
+</footer>
+<!-- ===== END FOOTER ===== -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/kph-ui.js"></script>
+<script src="js/demo.js"></script>
+<script>
+  // UI-first mode: while this is false, the page uses the sample products below.
+  // When the catalog API is ready, change it to true.
+  const USE_API = false;
+
+  // SAMPLE data. The real products come from the Catalog module.
+  const SAMPLE = {
+    categories: [
+      { id: 1, name: "Cameras",       note: "Mirrorless and DSLR" },
+      { id: 2, name: "Lenses",        note: "Prime and zoom"},
+      { id: 3, name: "Drones",        note: "Aerial and action"},
+      { id: 4, name: "Accessories",   note: "Bags, tripods and more"}
+    ],
+    popular: [
+      { id: 101, name: "Canon EOS R6 Mark II",       price: 154995, oldPrice: null,   rating: 4.9, image: "images/canon.jpg" },
+      { id: 102, name: "Sony Alpha a7 IV",           price: 124995, oldPrice: null,   rating: 4.9, image: "images/sony.jpg" },
+      { id: 103, name: "Canon RF 24-70mm f/2.8L",    price: 89995,  oldPrice: 99995,  rating: 4.8, image: "images/canonrf.jpg" },
+      { id: 104, name: "DJI Mini 3 Pro",             price: 34995,  oldPrice: null,   rating: 4.9, image: "images/minipro.jpg" }
+    ],
+    arrivals: [
+      { id: 201, name: "Fujifilm X-T5",              price: 94995,  oldPrice: null,   rating: 4.8, image: "images/fuji.jpg" },
+      { id: 202, name: "Nikon Z6 III",               price: 119995, oldPrice: 129995, rating: 4.7, image: "images/nikon.jpg" },
+      { id: 203, name: "Sigma 35mm f/1.4 DG DN",     price: 42995,  oldPrice: null,   rating: 4.9, image: "images/sigma.jpg" },
+      { id: 204, name: "Peak Design Everyday Sling", price: 6495,   oldPrice: null,   rating: 4.6, image: "images/bag.jpg" }
+    ]
+  };
+
+  // If a picture file is missing, show the grey "Photo" box instead of a broken image
+  document.addEventListener("error", (e) => {
+    const img = e.target;
+    if (img.tagName !== "IMG") return;
+    if (img.closest(".pc-img")) img.replaceWith("Photo"); else img.remove();
+  }, true);
+
+  // The picture inside a product card (or "Photo" when the product has no image)
+  function photo(p) {
+    return p.image ? '<img src="' + escapeHtml(p.image) + '" alt="' + escapeHtml(p.name) + '" loading="lazy">' : "Photo";
+  }
+
+  const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
+
+  function productCard(p) {
+    const old = p.oldPrice ? '<span class="pc-old-price">' + escapeHtml(formatPeso(p.oldPrice)) + "</span>" : "";
+    return `
+      <article class="product-card" data-id="${escapeHtml(p.id)}">
+        <button class="pc-heart${KPHDemo.inWishlist(p.id) ? " active" : ""}" type="button" aria-label="Add to wishlist">${HEART}</button>
+        <div class="pc-img">${photo(p)}</div>
+        <div class="pc-name">${escapeHtml(p.name)}</div>
+        <div><span class="pc-price">${escapeHtml(formatPeso(p.price))}</span>${old}</div>
+        <div class="rating"><span class="stars" aria-hidden="true">★★★★★</span>(${escapeHtml(p.rating)})</div>
+        <button class="btn btn-block btn-sm" type="button" data-add>Add to Cart</button>
+      </article>`;
+  }
+
+  // Links to the other modules are built from config.js (never typed here)
+  function catalogLink(page) { return KPH.modules.catalog + "/" + page; }
+
+  let ALL = [];   // every product on the page, so a tapped heart knows which product it is
+
+  function showHome(data) {
+    ALL = data.popular.concat(data.arrivals);
+    document.getElementById("categories").innerHTML = data.categories.map(c => `
+      <a class="card cat-card" href="${escapeHtml(catalogLink("listing.html?category=" + encodeURIComponent(c.id)))}">
+        ${c.image ? '<img src="' + escapeHtml(c.image) + '" alt="" loading="lazy">' : ""}
+        <strong>${escapeHtml(c.name)}</strong><span>${escapeHtml(c.note)}</span>
+      </a>`).join("");
+    document.getElementById("popular").innerHTML = data.popular.map(productCard).join("");
+    document.getElementById("arrivals").innerHTML = data.arrivals.map(productCard).join("");
+  }
+
+  document.getElementById("welcome").textContent = "Welcome back, " + KPHDemo.currentUser().FirstName + "!";
+  document.getElementById("shopNow").href = catalogLink("categories.html");
+  document.getElementById("seeDeals").href = KPH.modules.shopping + "/deals.html";
+
+  // Wishlist hearts and Add to Cart: remembered in this browser by js/demo.js (demo only).
+  // The wishlist page shows what you hearted here.
+  document.addEventListener("click", (e) => {
+    const heart = e.target.closest(".pc-heart");
+    if (heart) {
+      const product = ALL.find(p => String(p.id) === heart.closest(".product-card").dataset.id);
+      if (product) heart.classList.toggle("active", KPHDemo.toggleWishlist(product));
+    }
+    if (e.target.closest("[data-add]")) KPHDemo.addToCart();
+    // A tap on a product's photo or name counts as viewing it
+    const view = e.target.closest(".pc-img, .pc-name");
+    if (view) {
+      const product = ALL.find(p => String(p.id) === view.closest(".product-card").dataset.id);
+      if (product) KPHDemo.recordView(product);
+    }
+  });
+
+  async function load() {
+    try {
+      let data = SAMPLE;
+      if (USE_API) {
+        // Change this to the real endpoint when the catalog API is ready
+        data = await apiGet("/home.php");
+      }
+      showHome(data);
+    } catch (err) {
+      document.getElementById("main").insertAdjacentHTML("beforeend",
+        '<div class="alert alert-error">' + escapeHtml(err.message) + "</div>");
+    }
+  }
+  load();
+  KPHDemo.syncBadges();
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UI Kit demo | KameraPH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/kph.css">
+  <!-- keeps the light/dark choice without a flash -->
+  <script>try{var t=localStorage.getItem("kph-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+<!-- ===== KAMERAPH HEADER (copy as is, do not edit) ===== -->
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="kph-topbar">
+  <div class="kph-topbar-inner">
+    <span>Free Shipping on orders over ₱2,000</span>
+    <div class="kph-topbar-mid hide-mobile">
+      <span>100% Authentic Product</span>
+      <span>1 Year Warranty</span>
+      <span>Easy Return</span>
+    </div>
+    <span class="hide-mobile">Need Help? 0999 999 9999</span>
+  </div>
+</div>
+<header class="kph-header">
+  <div class="kph-header-inner">
+    <a class="kph-logo" href="#" aria-label="KameraPH home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </a>
+    <nav class="kph-nav" id="kph-nav" aria-label="Main"></nav>
+    <div class="kph-search" id="kph-search">
+      <form id="kph-search-form" role="search">
+        <input type="search" placeholder="Search cameras, lenses, accessories" aria-label="Search">
+        <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      </form>
+    </div>
+    <div class="kph-icons">
+      <button class="icon-btn only-mobile" id="kph-search-toggle" type="button" aria-label="Open search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="kph-theme-toggle" type="button" aria-label="Switch between light and dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <a class="icon-btn" data-kph-link="account" href="#" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="icon-btn" data-kph-link="wishlist" href="#" aria-label="Wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="dot" hidden></span></a>
+      <a class="icon-btn" data-kph-link="cart" href="#" aria-label="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span class="dot" hidden></span></a>
+    </div>
+  </div>
+</header>
+<!-- ===== END HEADER ===== -->
+
+<main id="main" class="container">
+  <h1>KameraPH UI Kit demo</h1>
+  <p class="muted">Every style in the kit on one page. Use the moon button in the header to switch between light and dark.</p>
+
+  <h2 class="section-title">Buttons</h2>
+  <div class="row">
+    <button class="btn" type="button">Shop Now</button>
+    <button class="btn btn-outline" type="button">Explore Details</button>
+    <button class="btn btn-sm" type="button">Small</button>
+    <button class="btn" type="button" disabled>Disabled</button>
+  </div>
+
+  <br>
+  <h2 class="section-title">Badges and alerts</h2>
+  <div class="row">
+    <span class="badge">Draft</span><span class="badge badge-orange">Pending</span><span class="badge badge-ok">Live</span>
+    <span class="badge badge-warn">Reserved</span><span class="badge badge-bad">Suspended</span>
+  </div>
+  <div class="stack" style="margin-top:12px">
+    <div class="alert alert-ok">Saved. Promotion number 12.</div>
+    <div class="alert alert-warn">This listing is waiting for verification.</div>
+    <div class="alert alert-error">EndDate must be after StartDate.</div>
+  </div>
+
+  <br>
+  <h2 class="section-title">Product cards (4 per row on desktop, 2 on mobile)</h2>
+  <div class="grid">
+      <article class="product-card">
+        <button class="pc-heart active" type="button" aria-label="Add to wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+        <div class="pc-img">Photo</div>
+        <div class="pc-name">Canon EOS R6 Mark II</div>
+        <div><span class="pc-price">₱154,995</span></div>
+        <div class="rating"><span class="stars" aria-hidden="true">★★★★★</span>(4.9)</div>
+        <button class="btn btn-block btn-sm" type="button">Add to Cart</button>
+      </article>
+      <article class="product-card">
+        <button class="pc-heart" type="button" aria-label="Add to wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+        <div class="pc-img">Photo</div>
+        <div class="pc-name">Sony Alpha a7 IV</div>
+        <div><span class="pc-price">₱124,995</span></div>
+        <div class="rating"><span class="stars" aria-hidden="true">★★★★★</span>(4.9)</div>
+        <button class="btn btn-block btn-sm" type="button">Add to Cart</button>
+      </article>
+      <article class="product-card">
+        <button class="pc-heart" type="button" aria-label="Add to wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+        <div class="pc-img">Photo</div>
+        <div class="pc-name">Canon RF 24-70mm f/2.8L</div>
+        <div><span class="pc-price">₱89,995</span><span class="pc-old-price">₱99,995</span></div>
+        <div class="rating"><span class="stars" aria-hidden="true">★★★★★</span>(4.9)</div>
+        <button class="btn btn-block btn-sm" type="button">Add to Cart</button>
+      </article>
+      <article class="product-card">
+        <button class="pc-heart" type="button" aria-label="Add to wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+        <div class="pc-img">Photo</div>
+        <div class="pc-name">DJI Mini 3 Pro</div>
+        <div><span class="pc-price">₱34,995</span></div>
+        <div class="rating"><span class="stars" aria-hidden="true">★★★★★</span>(4.9)</div>
+        <button class="btn btn-block btn-sm" type="button">Add to Cart</button>
+      </article>
+  </div>
+
+  <br>
+  <div class="layout-side">
+    <div class="stack">
+      <h2 class="section-title">Table</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Order</th><th>Buyer</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>#1001</td><td>Ana Reyes</td><td>₱154,995</td><td><span class="badge badge-ok">Delivered</span></td></tr>
+            <tr><td>#1002</td><td>Ben Cruz</td><td>₱34,995</td><td><span class="badge badge-orange">Shipped</span></td></tr>
+            <tr><td>#1003</td><td>Cara Lim</td><td>₱18,995</td><td><span class="badge badge-warn">To pack</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p id="status" class="status-msg">Loading... (the message shown while waiting for your API)</p>
+    </div>
+    <aside class="card form">
+      <h3>Form (side column)</h3>
+      <div class="field"><label for="d1">Name</label><input id="d1" placeholder="Juan"><span class="field-hint">Shown on your receipt.</span></div>
+      <div class="field"><label for="d2">Condition</label><select id="d2"><option>Brand New</option><option>Mint</option><option>Excellent</option></select></div>
+      <div class="field"><label for="d3">Notes</label><textarea id="d3"></textarea><span class="field-error">Notes are too long.</span></div>
+      <button class="btn" type="button">Save changes</button>
+    </aside>
+  </div>
+
+</main>
+
+<!-- ===== KAMERAPH FOOTER (copy as is, do not edit) ===== -->
+<footer class="kph-footer">
+  <div class="kph-footer-inner">
+    <div class="kph-logo">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </div>
+    <p class="kph-footer-note only-mobile">Your one-stop shop for professional gear.</p>
+    <p class="kph-footer-copy">© 2026 KameraPH. All rights reserved.</p>
+  </div>
+</footer>
+<!-- ===== END FOOTER ===== -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/kph-ui.js"></script>
+<script>
+  // demo only: shows the orange dots on the wishlist and cart icons
+  KPHUI.setBadge("wishlist", 1); KPHUI.setBadge("cart", 3);
+</script>
+</body>
+</html>

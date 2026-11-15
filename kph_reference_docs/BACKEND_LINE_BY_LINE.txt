@@ -1,0 +1,1501 @@
+=====================================================================
+ KameraPH | MODULE 1: USER ACCOUNT AND IDENTITY
+ BACKEND: LINE BY LINE (read it like a script)
+=====================================================================
+
+Written from the exact files in your BACKEND.zip:
+  config/config.php, config/Database.php
+  classes/Exceptions, Validator, Crypto, Role, UserRole, AuthIdentity,
+  VerificationToken, UserProfile, UserAddress, KycVerification, User,
+  ModuleApi
+
+Open it in VS Code. Press Alt+Z for word wrap.
+Keep the PHP file open on the other side of the screen. Every section
+gives LINE NUMBERS, so you can point at the code while you talk.
+
+HOW EACH PART IS WRITTEN
+  LINES 40-66   = the line numbers in the PHP file.
+  (plain text)  = what the code really does. This part is for YOU.
+  SAY:          = a short paragraph (3 to 4 sentences) you can say out loud
+                to the class.
+
+CONTENTS
+  0. What each file does and what it is for
+  A. Read this first: 10 PHP symbols and the big picture
+ A2. What is PDO?
+  B. Suggested order to present (about 10 minutes)
+  1. config/config.php
+  2. config/Database.php
+  3. classes/Exceptions.php
+  4. classes/Validator.php
+  5. classes/Crypto.php
+  6. classes/Role.php
+  7. classes/UserRole.php
+  8. classes/AuthIdentity.php
+  9. classes/VerificationToken.php
+ 10. classes/UserProfile.php
+ 11. classes/UserAddress.php
+ 12. classes/KycVerification.php
+ 13. classes/User.php            (the main one)
+ 13A. register() and login() with their code, line by line
+ 14. classes/ModuleApi.php
+ 15. Honest notes (things a professor may poke at)
+ 16. The 12 sentences to remember
+
+
+=====================================================================
+ WHAT EACH FILE DOES AND WHAT IT IS FOR (read this before the details)
+=====================================================================
+
+Think of a restaurant. The API files (made by your groupmates) are the
+WAITER: they take the order. The classes are the KITCHEN: they do the
+real work. MySQL is the FRIDGE: it stores everything. Your part is the
+kitchen plus the settings.
+
+THE config/ FOLDER (settings and connection)
+
+  config.php
+    WHAT: one file with every setting: database login, secret key, how
+          long codes last, the address limit, other modules' addresses.
+    FOR:  so a setting is changed in ONE place and nowhere else.
+
+  Database.php
+    WHAT: opens the connection to MySQL using PDO.
+    FOR:  every class shares this one connection. It is set up for safe
+          queries (prepared statements) and to report errors.
+
+THE classes/ FOLDER (the real work)
+
+  Exceptions.php
+    WHAT: two extra error types: AuthenticationException (wrong login)
+          and ForbiddenException (not allowed).
+    FOR:  so the API can turn each kind of error into the right status
+          code (400, 401, 403, 404).
+
+  Validator.php
+    WHAT: a toolbox of input checks: name, email, phone, password, date,
+          file address, and so on.
+    FOR:  every rule is written once and used everywhere. Bad input is
+          stopped before it reaches the database.
+
+  Crypto.php
+    WHAT: encrypts ID numbers (AES-256-GCM) and scrambles codes
+          (HMAC-SHA256).
+    FOR:  protecting private data. The database never holds a readable ID
+          number or a readable code.
+
+  Role.php
+    WHAT: manages the `role` table: buyer, seller, admin.
+    FOR:  making sure the 3 roles exist and looking them up.
+
+  UserRole.php
+    WHAT: manages the `user_role` table: who has which role.
+    FOR:  giving and removing roles, with checks (no duplicates, an admin
+          cannot remove their own admin role).
+
+  AuthIdentity.php
+    WHAT: manages the `auth_identity` table: the link between a user and
+          a Google or Facebook account.
+    FOR:  social login ("Continue with Google").
+
+  VerificationToken.php
+    WHAT: manages the `verification_token` table: one-time codes.
+    FOR:  verifying an email or phone and resetting a password. A code
+          works once, expires, and is saved only as a hash.
+
+  UserProfile.php
+    WHAT: manages the `user_profile` table: username, bio, picture,
+          birthday.
+    FOR:  the public side of a user. It also makes a username
+          automatically and hides the birthday from other users.
+
+  UserAddress.php
+    WHAT: manages the `user_address` table: delivery addresses.
+    FOR:  saving up to 10 addresses per user, with exactly one default.
+
+  KycVerification.php
+    WHAT: manages the `kyc_verification` table: the seller ID check.
+    FOR:  a user sends an ID, an admin approves or rejects it. The ID
+          number is encrypted and never returned.
+
+  User.php   (THE MAIN CLASS)
+    WHAT: manages the `user` table and uses all the classes above.
+    FOR:  register, login, social login, edit account, change password,
+          verify email or phone, reset password, suspend, reactivate,
+          and the admin's user list.
+
+  ModuleApi.php
+    WHAT: sends requests to OTHER modules (notifications, logs).
+    FOR:  connecting Module 1 to the rest of the system. It is switched
+          OFF by default so Module 1 works alone.
+
+THE RULE FOR ALL CLASSES
+  Classes never print anything and never read the request. They return
+  data or throw an error. The API files do the talking.
+
+
+=====================================================================
+ A. READ THIS FIRST
+=====================================================================
+
+THE BIG PICTURE (say this in the first 20 seconds)
+  SAY: "The backend is the part of the system that does the thinking: it
+       applies the rules and saves everything to the database. It has no
+       buttons or pages, because the user interface is done by my
+       groupmates. Everything I made lives in two folders. The config
+       folder holds the settings and the database connection, and the
+       classes folder holds one class for each main table plus a few
+       helper classes."
+
+THE 10 PHP SYMBOLS YOU WILL SEE EVERYWHERE
+  <?php            Starts PHP code.
+  // text          A comment. PHP ignores it. It explains the code.
+  $name            A variable (a box with a name that holds a value).
+  [ ... ]          An array: a list, or a list of "name => value" pairs.
+  "Key" => value   One pair inside an array, like "host" => "localhost".
+  ->               "Use something that belongs to this object."
+                   $this->db means "the db that belongs to this object".
+  ::               "Use something that belongs to the class itself."
+                   Validator::email(...) calls the email check.
+  ??               "or this instead". $data["Email"] ?? null means:
+                   use $data["Email"], or null if it was not sent.
+  ?Type            "can also be null". ?array means "an array or null".
+  throw new X(..)  Stops the method and sends an error to whoever called it.
+
+A FEW MORE
+  class            A blueprint. User is the blueprint for user actions.
+  public/private   public = can be used from outside, private = only inside.
+  static           Belongs to the class, you do not need to make an object.
+  function         A named action (a method, when it is inside a class).
+  : int, : array   The type of value the function gives back.
+  require_once     Loads another PHP file, one time only.
+  ===  !==         "exactly equal" and "not equal". Safer than == and !=.
+  (string) (int)   Turn a value into text or into a whole number.
+  prepare / execute  The two steps of a prepared statement (see below).
+
+THE SAME 3 STEPS ARE IN ALMOST EVERY METHOD
+  1) CHECK the input (with Validator).
+  2) CHECK the rules in the database (is it taken? does it exist?).
+  3) SAVE or READ, then RETURN the result. Or THROW an error.
+
+PREPARED STATEMENT, THE PATTERN YOU WILL SEE 100 TIMES
+      $stmt = $this->db->prepare("SELECT * FROM user WHERE UserID = ?");
+      $stmt->execute([$userId]);
+  The ? is a blank. The value is sent on its own in execute(). The
+  database never mixes the user's text into the command, so SQL
+  injection cannot work.
+  SAY: "Every query in the backend uses a prepared statement. That means the
+       SQL command is sent to the database first with blanks (the
+       question marks), and the user's values are sent separately
+       afterwards. Because of this, whatever the user types can never
+       become part of the SQL command. This is how the backend is
+       protected against SQL injection."
+
+AFTER execute(), THESE APPEAR OFTEN
+  fetch()          Get one row (an array), or false if there is none.
+  fetchAll()       Get all rows.
+  fetchColumn()    Get just the first value of the first row.
+  lastInsertId()   The ID the database just gave to the new row.
+  rowCount()       How many rows the last UPDATE/DELETE changed.
+  "fetch() ?: null"  means: if there is no row, give back null.
+
+WHAT "THROW" MEANS FOR THE API
+  InvalidArgumentException  = wrong input or a broken rule  -> HTTP 400
+  AuthenticationException   = wrong login                   -> HTTP 401
+  ForbiddenException        = not allowed (suspended)       -> HTTP 403
+  OutOfBoundsException      = not found                     -> HTTP 404
+  anything else             = a real bug                    -> HTTP 500
+
+
+=====================================================================
+ A2. WHAT IS PDO? (say this when you reach Database.php)
+=====================================================================
+
+WHAT IT IS
+  PDO stands for PHP Data Objects. It is the tool that PHP uses to talk
+  to a database. Our backend uses PDO to connect to MySQL, send queries,
+  and read the answers back. Think of PDO as the phone line between the
+  PHP code and the database.
+
+WHY WE USE IT
+  PDO supports prepared statements, which protect against SQL injection.
+  It also reports database errors as exceptions, which our code can
+  handle properly. And it works the same way for many databases, so the
+  code does not depend on one specific database function.
+
+HOW IT LOOKS IN OUR CODE
+  1) Database.php creates the connection once:
+        new PDO($dsn, $user, $password, $options)
+     The $dsn is the address of the database: the type (mysql), the host,
+     the database name and the character set (utf8mb4).
+  2) Every class then uses that connection ($this->db) like this:
+        $stmt = $this->db->prepare("SELECT * FROM user WHERE UserID = ?");
+        $stmt->execute([$userId]);
+        $row = $stmt->fetch();
+     prepare() sends the SQL command with a blank (the ?). execute()
+     sends the value separately. fetch() reads the answer.
+
+THE THREE OPTIONS WE SET (Database.php lines 24-26)
+  ERRMODE_EXCEPTION   If the database has an error, PHP throws an
+                      exception. Without it, errors could be silent.
+  FETCH_ASSOC         Each row comes back as an array with the column
+                      names, like $row["Email"].
+  EMULATE_PREPARES    Set to false. PHP does not pretend. It uses the
+                      REAL prepared statements of MySQL, so the command
+                      and the data really travel separately.
+
+WHAT A PREPARED STATEMENT IS
+  A prepared statement is a SQL command with blanks for the values. The
+  database receives and understands the command first. Only then does it
+  receive the values, and it treats them as plain data, never as part of
+  the command. So if someone types ' OR '1'='1 as their email, the
+  database just looks for a user whose email is literally that text, and
+  finds nobody.
+
+SAY: "PDO is the way our PHP code connects to MySQL. We use it because it
+      supports prepared statements, which keep user input separate from
+      the SQL command, so SQL injection cannot work. Our Database class
+      opens one PDO connection and every class shares it. We also set it
+      to throw exceptions on errors and to use real prepared statements."
+
+
+=====================================================================
+ B. SUGGESTED ORDER TO PRESENT (about 10 minutes)
+=====================================================================
+
+  1. config.php            (1 minute)   settings in one place
+  2. Database.php          (1 minute)   one PDO connection
+  3. The classes folder    (1 minute)   one class per table + helpers
+  4. Validator.php         (1 minute)   checks written once
+  5. User.php register()   (3 minutes)  the full example
+  6. User.php login()      (1 minute)   same message for every failure
+  7. User.php suspend()    (30 sec)
+  8. KycVerification       (1 minute)   encrypted ID number
+  9. Crypto.php            (30 sec)
+ 10. Run the demo or show the tests (1 minute)
+
+If you only have time for one thing, learn section 13 (register).
+
+
+=====================================================================
+ 1. config/config.php   (51 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  One file with all the settings. The guide says the database settings
+  must live ONLY here. The file does not run anything. It just returns
+  one big array of settings.
+
+LINES 1-5   (<?php and the comment box)
+  Starts PHP, and the comment says this is the only file with settings.
+
+LINE 7      return [
+  "return" hands back the whole array at the end of the file. Another
+  file (Database.php) loads this file and receives that array.
+
+LINES 8-12  The database login
+  "host" => "localhost"            the database is on the same computer.
+  "dbname" => "kph_user_account_identity"   the name of the database.
+  "user" => "root", "pass" => ""   the XAMPP default login (no password).
+  SAY: "These four lines are the database login: the host, the database name,
+       the user and the password. They are written only in config.php
+       and nowhere else in the code. When we upload the project to the
+       web host, we only change these four values. Nothing else in the
+       backend needs to be touched."
+
+LINES 14-17  Secrets
+  "encryption_key" is 64 characters of 0-9 and a-f (hex). That is 32
+  bytes. It is the secret key used to encrypt ID numbers and to scramble
+  tokens. In the shared copy it is all zeros as a placeholder. Everyone
+  should use their own and never change it later, because old encrypted
+  ID numbers could not be read any more.
+  SAY: "The encryption key is the secret that protects the sellers' ID numbers.
+       It is 64 characters of 0 to 9 and a to f, which is 32 bytes, the
+       size AES-256 needs. Everyone should use their own key and never
+       change it later, because ID numbers that were already encrypted
+       could not be read any more. In the shared copy it is all zeros as
+       a placeholder."
+
+LINES 19-21  module_key
+  A shared password that the other 9 modules send in a header called
+  X-Module-Key, so they may read user data server to server.
+
+LINES 23-29  Rules
+  "token_minutes": how long a code works: verify_email 30 minutes,
+  verify_phone 10 minutes, reset_password 30 minutes.
+  "max_addresses_per_user" => 10: the most addresses one user may save.
+
+LINES 31-33  show_token_in_response
+  true = demo mode. Because we have no real email or SMS yet, the API
+  shows the code on the screen. The comment says to set it to false for
+  the final demo.
+
+LINES 35-46  Other modules
+  The base API address of each of the other modules, with no slash at the
+  end. We only keep the addresses here, never in other files.
+
+LINES 48-50  call_other_modules => false
+  Module 1 works alone. Calls to Module 4 (notifications) and Module 10
+  (logs) are switched OFF until those modules are ready.
+
+LINE 51     ];  closes the array.
+
+SAY (summary):
+  "config.php holds every setting of the module in one place: the
+  database login, the secret key, how long each code works, the address
+  limit, and the addresses of the other modules. Nothing else in the
+  code has these values written inside it. If a rule changes, for
+  example the code lifetime, we change one number in this file. This
+  keeps the rest of the backend clean and easy to maintain."
+
+
+=====================================================================
+ 2. config/Database.php   (31 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  A small class that opens ONE connection to MySQL using PDO, and gives
+  that same connection to every class that asks.
+
+LINE 1-2    Opening and comment: "Connects to MySQL with PDO. One
+            connection is shared by the whole request."
+
+LINE 4      class Database
+  Starts the class named Database.
+
+LINE 6      private static ?PDO $connection = null;
+  A place to keep the connection.
+   - private: only this class can touch it.
+   - static: one copy that belongs to the class, shared by everyone.
+   - ?PDO: it holds a PDO connection, or null.
+   - = null: at the start there is no connection yet.
+
+LINES 8-15  getConfig()
+  Line 8  : a public static function that returns an array.
+  Line 10 : "static $config = null;" a variable that remembers its value
+            between calls, so the file is read only once.
+  Lines 11-13: if the settings were not loaded yet, load them with
+            require __DIR__ . '/config.php'. __DIR__ is the folder of
+            this file. Because config.php says "return [...]", the
+            require gives back that array.
+  Line 14 : return the settings.
+  SAY: "getConfig reads config.php one time and returns the settings as an
+       array. It remembers the result in a static variable, so the file
+       is not opened again on every call. Every class that needs a
+       setting asks Database::getConfig(). This way there is only one
+       place where the settings are loaded."
+
+LINES 17-30  getConnection()
+  Line 19 : if there is no connection yet ...
+  Line 20 : get the settings.
+  Line 21 : build the DSN, which is the "address" of the database:
+            "mysql:host=localhost;dbname=kph_user_account_identity;
+             charset=utf8mb4"
+            utf8mb4 lets the database store any letter, including
+            names with accents.
+  Line 23 : new PDO(dsn, user, password, options) opens the connection.
+  Line 24 : ATTR_ERRMODE => ERRMODE_EXCEPTION
+            If the database has an error, PHP throws an exception
+            instead of staying quiet.
+  Line 25 : ATTR_DEFAULT_FETCH_MODE => FETCH_ASSOC
+            Rows come back as arrays with the column names, like
+            $row["Email"].
+  Line 26 : ATTR_EMULATE_PREPARES => false
+            Use REAL prepared statements from MySQL (not PHP pretending).
+            This is what makes SQL injection protection real.
+  Line 29 : return the connection. The next call reuses it.
+
+SAY (summary):
+  "Database.php makes one PDO connection from the settings, and every
+  class shares that same connection. It is set to throw an exception
+  when the database has an error, so problems are never hidden. It
+  returns rows as arrays with the column names, which are easy to use.
+  It also uses real prepared statements, which is what makes the SQL
+  injection protection real."
+
+
+=====================================================================
+ 3. classes/Exceptions.php   (14 lines)
+=====================================================================
+
+LINES 2-6   Comment: lists which exception turns into which status code.
+LINES 8-10  class AuthenticationException extends RuntimeException { }
+LINES 12-14 class ForbiddenException extends RuntimeException { }
+  Two extra error types. "extends RuntimeException" means they are a kind
+  of exception that PHP already has. The braces are empty because they
+  need no extra code. PHP already has InvalidArgumentException and
+  OutOfBoundsException, so we only had to add these two.
+  SAY: "We made two error types of our own: AuthenticationException for a wrong
+       login and ForbiddenException for 'you are not allowed'. PHP
+       already has InvalidArgumentException and OutOfBoundsException, so
+       we did not need to make those. The classes only throw these
+       errors and never decide the HTTP code themselves. The API files
+       catch them and turn each one into its own status code: 400, 401,
+       403 or 404."
+
+
+=====================================================================
+ 4. classes/Validator.php   (154 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  A toolbox of small checks used by every other class. Each check
+  returns a clean value, or throws InvalidArgumentException with a clear
+  message. All methods are "static", so you call them like
+  Validator::email($value) without making an object.
+
+LINES 1-5   Comment and "class Validator".
+
+LINES 7-28  text($value, $label, $max, $required = true)
+  The base check that the others use.
+  Line 10-12: if the value is not null, not text and not a number (for
+              example an array), throw "must be text".
+  Line 13   : trim((string)$value): turn it into text and cut spaces at
+              both ends. null becomes "".
+  Lines 15-20: if it is empty: when required, throw "is required";
+              when optional, return null.
+  Lines 21-23: mb_strlen counts characters. Longer than $max: throw
+              "must be at most N characters".
+  Lines 24-26: a pattern that finds hidden control characters. If found,
+              throw "has characters that are not allowed".
+  Line 27   : return the clean text.
+  SAY: "text() is the base check that most of the other checks use. It trims
+       the spaces, checks that the value is not empty when it is
+       required, and checks that it is not longer than the maximum. It
+       also blocks hidden control characters that have no place in a
+       name or an address. If anything is wrong it throws an
+       InvalidArgumentException with a clear message."
+
+LINES 30-38  name($value, $label, $required = true)
+  Line 33: first run text() with a limit of 100.
+  Line 34: a pattern (regex) says: the first character must be a letter,
+           and the rest may be letters, spaces, dots, apostrophes or
+           hyphens. This lets "Ma. Cristina", "De la Cruz" and "O'Neil"
+           pass, and rejects things like "<script>". The /u at the end
+           makes it understand any language's letters.
+  Line 35: if it does not match: throw "can only have letters, ...".
+
+LINES 40-47  email($value)
+  Line 42: text() with a limit of 191, then strtolower makes it lowercase
+           so Juan@X.com and juan@x.com are the same.
+  Line 43: filter_var(..., FILTER_VALIDATE_EMAIL) is PHP's own email
+           check. If it fails, throw "not a valid email address".
+
+LINES 49-60  phone($value, $label = "Phone number")
+  Line 53: text() with a limit of 20.
+  Line 54: normalizePhone() cleans it.
+  Lines 56-58: if the result is null, throw "must be a Philippine mobile
+           number, like 09171234567".
+  Line 59: return the clean 09XXXXXXXXX form.
+  SAY: "Whatever way the phone number is typed, we always save it in the same
+       form, 09 followed by 9 digits. It accepts 09171234567,
+       +639171234567, 639171234567 and 9171234567. Because every number
+       is cleaned the same way, login by phone always matches the saved
+       number. Numbers that are not Philippine mobile numbers are
+       refused with a clear message."
+
+LINES 62-75  normalizePhone($value)
+  Same idea but gives null instead of an error (also used for searching).
+  Line 65: remove spaces, dashes, brackets and dots.
+  Lines 67-68: if it starts with +63, replace those 3 characters with 0.
+               (+639171234567 becomes 09171234567.)
+  Lines 69-70: if it starts with 63 and has 12 digits, replace 63 with 0.
+  Lines 71-72: if it has 10 digits and starts with 9, add a 0 in front.
+  Line 74: it must now be exactly 09 followed by 9 digits (11 digits
+           total), else null.
+
+LINES 77-87  id($value, $label)
+  Accepts only a whole number above 0, either a real integer or a text
+  made only of digits. "abc" and "-5" are refused with "must be a whole
+  number greater than 0".
+
+LINES 89-104 password($value)
+  Line 91: not text or empty: "Password is required."
+  Line 94: shorter than 8: "at least 8 characters".
+  Line 97: longer than 72: "at most 72 characters" (72 is the limit of
+           the hashing method that PHP uses).
+  Line 100: it needs at least one letter AND one number.
+  SAY: "A strong password in this system has at least 8 characters, with at
+       least one letter and one number. There is also a maximum of 72
+       characters, because that is the limit of the hashing method PHP
+       uses. If the password breaks any of these rules, the user gets a
+       message that says exactly which rule. The password is checked
+       here first, and only then hashed and saved."
+
+LINES 106-115 oneOf($value, $allowed, $label)
+  Checks that a value is one of an allowed list (for example the three
+  address types). It compares ignoring capital letters, and returns the
+  official spelling from the list ("home" becomes "Home"). If nothing
+  matches, it throws "must be one of: Home, Work, Other".
+
+LINES 117-132 pastDate($value, $label)
+  A birthday check.
+  Line 120: optional text of 10 characters. Empty gives null.
+  Lines 124-127: it must be a REAL date written YYYY-MM-DD. The code
+           builds the date and writes it back. If the result is
+           different, it was not real (for example 2024-02-30).
+  Lines 128-130: it must not be in the future and not before 1900.
+
+LINES 134-148 fileUrl($value, $label, $required = true)
+  For photo addresses.
+  Line 141: a web address starts with http:// or https:// and passes
+            PHP's URL check.
+  Line 142: or a simple file path like uploads/id/front.jpg: only
+            letters, numbers, underscore, dash, dot and slash, and no
+            ".." (so nobody can climb out of the folder).
+  Lines 144-146: if it is neither, throw an error.
+  SAY: "A photo address must be either a web address that starts with http or
+       https, or a simple file path made of safe characters. So
+       something like javascript:alert(1) is refused, because it is
+       neither of those. A path that contains two dots is also refused,
+       so nobody can climb out of the upload folder. This keeps
+       dangerous links out of the database."
+
+LINES 150-153 has($data, $key)
+  Gives true if the key exists in the array, even when its value is
+  null. Used to see which fields the caller actually sent.
+
+SAY (summary):
+  "Validator holds every input check in one place, and all the other
+  classes call it. If a rule changes, for example the minimum password
+  length, I change one method and the whole backend follows. It also
+  means bad data is stopped before it ever reaches the database. Each
+  check either returns a clean value or throws a clear error message."
+
+
+=====================================================================
+ 5. classes/Crypto.php   (43 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  Two jobs: ENCRYPT an ID number so it can be read back only with the
+  secret key, and SCRAMBLE tokens (codes) in a one-way way.
+
+LINE 5      require_once Database.php: to read the key from config.
+
+LINES 9-16  key()  (private: only used inside this class)
+  Line 11: read "encryption_key" from the settings.
+  Line 12: ctype_xdigit checks it only has 0-9 and a-f, and strlen must
+           be 64. If not, throw "must be 64 hex characters".
+  Line 15: hex2bin turns the 64 characters into 32 raw bytes, which is
+           the size AES-256 needs.
+
+LINES 18-25 encrypt($plain)
+  Line 21: random_bytes(12): a new random 12-byte "IV" every time. This
+           is why encrypting the same ID number twice gives different
+           results.
+  Line 22: $tag will receive an "authentication tag" (16 bytes). It is a
+           seal that lets us notice if someone changed the data.
+  Line 23: openssl_encrypt(...) with "aes-256-gcm" does the encryption.
+  Line 24: join IV + tag + encrypted data and base64_encode it into plain
+           text that fits in a VARCHAR column.
+  SAY: "The ID number is encrypted with AES-256-GCM, which is a strong, modern
+       encryption method. Every time, a new random value called the IV
+       is made, so the same ID number never gives the same result twice.
+       The saved text holds the IV, an authentication tag and the
+       encrypted data, joined together and turned into base64 text. The
+       tag lets us notice if somebody changed the data, because then
+       decryption fails."
+
+LINES 27-36 decrypt($stored)
+  Only for server-side checks. The API never returns it.
+  Line 30: base64_decode back to raw bytes.
+  Lines 31-33: if it is not valid or too short (under 29 bytes = 12 + 16
+           + at least 1), return null.
+  Line 34: split the bytes: the first 12 are the IV, the next 16 are the
+           tag, the rest (from byte 28) is the encrypted data. Then
+           openssl_decrypt.
+  Line 35: if decryption fails (wrong key, or data changed), return null
+           instead of an error.
+
+LINES 38-42 hashToken($token)
+  hash_hmac("sha256", $token, key) scrambles a token ONE WAY with the
+  secret key. The same token always gives the same result, so we can
+  search for it in the database, but nobody can turn it back into the
+  token.
+  SAY: "Encryption can be reversed with the key, but hashing cannot be reversed
+       at all. We encrypt ID numbers because the system may need to read
+       them again later. We hash the codes because we only ever need to
+       check them, never read them. So even if someone steals the
+       database, they cannot read the codes, and they cannot read the ID
+       numbers without the secret key."
+
+
+=====================================================================
+ 6. classes/Role.php   (49 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  Handles the `role` table: the three roles buyer, seller and admin.
+
+LINE 2      Loads Database.php so we can connect.
+LINE 4      class Role
+LINE 6      private PDO $db;   the connection, kept inside this object.
+
+LINES 8-13  DEFAULT_ROLES
+  A constant list (it never changes) of the 3 roles with their
+  descriptions: buyer, seller, admin.
+
+LINES 15-18 __construct()
+  The constructor runs automatically when we write "new Role()".
+  It asks Database for the shared connection and stores it in $this->db.
+  EVERY class in this backend starts the same way.
+  SAY: "Each class gets the shared database connection at the moment it is
+       made, inside its constructor. It asks Database::getConnection()
+       and stores the answer in $this->db. Because the connection is
+       shared, the whole request uses only one connection. Every class
+       in this backend starts the same way."
+
+LINES 20-29 ensureDefaults()
+  Line 23: go through the 3 default roles one by one.
+  Line 24: if a role is not in the database yet (getByName gives null) ...
+  Lines 25-26: ... insert it with a prepared statement.
+  The comment says it is safe to run again and again: it only adds what
+  is missing, so it never creates duplicates.
+
+LINES 31-34 getAll()   returns every role, ordered by RoleID.
+LINES 36-41 getById()  returns one role by its ID, or null if none.
+                       "fetch() ?: null" = give the row, or null.
+LINES 43-48 getByName()  same, but by name. strtolower(trim(...)) cleans
+                       the name first, so " Admin " finds "admin".
+
+SAY (summary):
+  "Role.php makes sure that the three roles, buyer, seller and admin,
+  exist in the database. It can add them if they are missing, and
+  running it again never creates duplicates. It also lets the other
+  classes look a role up by its ID or by its name. It is a small class,
+  but the other role features depend on it."
+
+
+=====================================================================
+ 7. classes/UserRole.php   (109 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  Handles the `user_role` table: which user has which role.
+
+LINES 2-4   Loads Database, Validator and Role.
+LINES 8-9   Two private properties: $db (connection) and $roles (a Role
+            object, used to look roles up).
+LINES 11-15 Constructor: gets the connection and creates a Role object.
+
+LINES 17-31 assign($userId, $roleId)   gives a role by IDs
+  Line 20: the user must exist (else "User not found", HTTP 404).
+  Lines 21-23: the role must exist (else "Role not found", 404).
+  Lines 24-26: the user must not already have it (else "already has this
+               role", 400).
+  Lines 28-30: insert the pair and return the new UserRoleID.
+  SAY: "Before giving a role, UserRole checks three things. First, the user
+       must exist. Second, the role must exist. Third, the user must not
+       already have that role. If any of these fails, a clear error is
+       thrown and nothing is saved, so the table never gets a duplicate
+       or a broken link."
+
+LINES 33-42 assignByName($userId, "seller")
+  Line 36: ensureDefaults() so buyer/seller/admin are surely there.
+  Lines 37-40: find the role by name, or throw "Role not found".
+  Line 41: call assign() with the role's ID.
+
+LINES 44-53 assignFromData($data)
+  Used by the API. It takes the request body (an array).
+  Line 47: UserID must be a valid whole number.
+  Lines 49-51: if "RoleName" was sent, assign by name.
+  Line 52: otherwise it needs a RoleID.
+
+LINES 55-66 getRolesByUser($userId)
+  A JOIN: it joins user_role with role to show role names instead of
+  just numbers, for one user, ordered by RoleID.
+
+LINES 68-77 hasRole($userId, "admin")
+  Counts matching rows (user + role name). More than 0 means true.
+
+LINES 79-92 remove($userId, $roleId, $actingUserId)
+  Line 82-84: the user must have that role (else "does not have this
+              role", 404).
+  Lines 85-88: if the person removing the role is the same user AND the
+              role is admin, refuse: "You cannot remove your own admin
+              role."
+  Lines 90-91: delete the row.
+  HONEST NOTE: this stops an admin from removing THEIR OWN admin role. It
+  does not check whether other admins exist.
+
+LINES 94-99  userHasRoleId()    private helper: does this pair exist?
+LINES 101-108 requireUserExists()  private helper: throws "User not
+              found" when the user does not exist.
+
+SAY (summary):
+  "UserRole connects users to roles, which is how the system knows who
+  is a buyer, a seller or an admin. It refuses duplicates, unknown users
+  and unknown roles. It also stops an admin from removing their own
+  admin role by accident. The roles of a user are read with a JOIN, so
+  we see the role names and not only numbers."
+
+
+=====================================================================
+ 8. classes/AuthIdentity.php   (53 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  Handles the `auth_identity` table: the link between a user and their
+  Google or Facebook account (social login).
+
+LINE 10     PROVIDERS = ["google", "facebook"]: the only two allowed.
+LINES 12-15 Constructor: gets the connection.
+
+LINES 17-24 findUserId($provider, $providerUserId)
+  Looks for a row with this provider and this provider ID. fetchColumn()
+  gives the UserID or false. Line 23: false becomes null, otherwise the
+  UserID is returned as a whole number.
+  SAY: "This method answers the question: which of our users owns this Google
+       or Facebook account, if anyone? It looks in the auth_identity
+       table for the provider and the provider's own ID. If it finds a
+       row it returns the UserID, and if not it returns null. Social
+       login uses this first, because a linked account can log in right
+       away."
+
+LINES 26-44 link($userId, $provider, $providerUserId)
+  Line 29: the provider must be google or facebook.
+  Line 30: the provider's ID must be text of at most 255 characters.
+  Lines 32-34: if that Google account is already linked to someone,
+               throw an error.
+  Lines 35-39: if this user already has that provider linked, throw an
+               error (one Google account and one Facebook account per
+               user).
+  Lines 41-43: insert the link and return its ID.
+
+LINES 46-52 getByUser($userId)
+  Lists the user's linked accounts. The SELECT leaves out
+  ProviderUserID, so the provider's own ID is not shown.
+
+
+=====================================================================
+ 9. classes/VerificationToken.php   (78 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  Handles the one-time codes for: verify email, verify phone, and reset
+  password. The real code is shown ONCE. The database keeps only a
+  scrambled (hashed) copy.
+
+LINE 12     PURPOSES = ["verify_email", "verify_phone", "reset_password"]
+LINES 14-17 Constructor: gets the connection.
+
+LINES 19-40 create($userId, $purpose)   makes a new code
+  Line 22: the purpose must be one of the three.
+  Line 25: if it is a reset, the token is bin2hex(random_bytes(32)): 64
+           random characters. Otherwise it is a random 6-digit number
+           (random_int 100000 to 999999). The 6-digit one is easy to
+           type from an SMS.
+  Line 26: read how many minutes it lasts from config.php.
+  Line 28: beginTransaction() starts an "all or nothing" block.
+  Lines 29-30: mark every older, unused code of the same user and
+           purpose as used (UsedAt = now). So only the newest works.
+  Lines 32-36: insert the new code. Only the HASH goes in. ExpiresAt is
+           the database's NOW() plus the minutes.
+  Line 37: commit() saves both steps together.
+  Line 39: return the real token. This is the only time it exists in
+           plain form.
+  SAY: "The code is hashed before it is saved. Only the scrambled version goes
+       into the database, and the real code is given back once, at the
+       moment it is created. If someone steals the database, they cannot
+       read the codes or use them. We hash it with the secret key, so
+       the same code always gives the same hash, which lets us search
+       for it later."
+
+LINES 42-77 verify($userId, $purpose, $token)   checks a code
+  Lines 45-49: purpose valid, token not empty.
+  Lines 51-58: look for the newest row for this user + purpose + the
+           HASH of what was typed. It also asks the database whether it
+           is expired (ExpiresAt < NOW()).
+  Lines 60-62: no row: "The code is not correct."
+  Lines 63-65: UsedAt is filled: "This code was already used."
+  Lines 66-68: expired: "This code has expired."
+  Lines 70-75: mark it used with "UPDATE ... WHERE TokenID = ? AND
+           UsedAt IS NULL". If rowCount() is 0, somebody used it at the
+           same moment, so refuse. This protects against two requests
+           arriving together.
+  Line 76: return true.
+  SAY: "A code works only once. After it is used, it is marked with a UsedAt
+       time and cannot be used again. It also expires after the minutes
+       set in config.php. And when a user asks for a new code, the older
+       unused codes of the same purpose are cancelled, so only the
+       newest code works."
+
+
+=====================================================================
+ 10. classes/UserProfile.php   (132 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  Handles the `user_profile` table: username, bio, profile picture and
+  birthday. Every user has exactly one profile.
+
+LINES 2-3   Loads Database and Validator.
+LINE 7      $db: the connection.
+LINE 9      COLUMNS: the list of columns to select, written once.
+LINES 11-14 Constructor: gets the connection.
+
+LINES 16-48 validate($data, $isNew, $userId, $baseForUsername)
+  Checks the profile fields and returns a clean array. "$isNew" says if
+  this is a new profile or a change.
+  Line 22: handle Username if it was sent, or if the profile is new.
+  Line 23: if a non-empty Username was sent ...
+    Line 24: text() with a limit of 30.
+    Lines 25-27: the pattern says 3 to 30 characters of letters, numbers,
+                 dot or underscore. If not, throw.
+    Lines 28-30: if another user already has it, throw "already taken".
+    Line 31: keep it.
+  Lines 32-33: otherwise, if the profile is new, make a username
+               automatically with makeUsername().
+  Lines 34-36: otherwise (a change with an empty username) throw
+               "Username is required."
+  Lines 38-40: Bio, optional, up to 1000 characters.
+  Lines 41-43: ProfilePictureURL, optional, checked by fileUrl().
+  Lines 44-46: DateOfBirth, checked by pastDate().
+  Line 47: return only the fields that were sent and passed.
+  SAY: "Only the fields that were sent are checked. This is what makes a
+       partial update work: if the user only changes the bio, we do not
+       need the username or the birthday. Each field that is sent goes
+       through its own check, and the ones that pass are saved. If
+       nothing valid was sent, the method throws an error instead of
+       doing an empty update."
+
+LINES 50-70 create($userId, $data, $baseForUsername)
+  Lines 53-55: if the user already has a profile, throw (one profile per
+               user).
+  Line 56: validate as a new profile.
+  Lines 58-68: insert. "$clean["Bio"] ?? null" means: use the value, or
+               null if it was not sent.
+  Line 69: return the new ProfileID.
+
+LINES 72-77 getByUserId()  one profile, or null.
+
+LINES 79-101 update($userId, $data)
+  Lines 82-84: the profile must exist.
+  Line 85: validate (not new).
+  Lines 86-88: if nothing valid was sent, throw "Nothing to update."
+  Lines 90-96: build the SET part of the UPDATE one field at a time:
+               "Bio = ?", "Username = ?" and so on, and a list of values.
+               The comment on line 92 matters: the column names come
+               from validate() (our own code), NEVER from what the user
+               typed. The values go through ? so they are safe.
+  Lines 98-99: run the UPDATE.
+  Line 100: return the profile after the change.
+
+LINES 103-108 toPublic($profile)
+  unset() removes DateOfBirth, so other users never see it.
+
+LINES 110-115 usernameTaken($username, $exceptUserId)
+  Counts profiles with that username that belong to a different user.
+
+LINES 117-131 makeUsername($base)
+  Line 120: remove every character that is not a letter, number, dot or
+            underscore, and make it lowercase.
+  Lines 121-123: if shorter than 3 characters, put "user" in front.
+  Line 124: cut to 24 characters (so there is room for 4 more digits).
+  Lines 126-130: if the username is taken, add 4 random digits and try
+            again until a free one is found.
+  SAY: "When a user registers without choosing a username, the system makes one
+       for them. From juan.delacruz@mail.com we take the part before the
+       @, which gives juan.delacruz. The code removes any character that
+       is not allowed and makes it lowercase. If that username is
+       already taken, it adds four random digits and tries again until
+       it finds a free one."
+
+
+=====================================================================
+ 11. classes/UserAddress.php   (208 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  Handles the `user_address` table: delivery addresses. A user can have
+  several, and exactly one is the default.
+
+LINE 9      ADDRESS_TYPES = Home, Work, Other.
+LINES 11-14 Constructor: gets the connection.
+
+LINES 16-62 create($userId, $data)
+  Line 20: validate all fields as a new address.
+  Lines 22-24: count how many addresses the user already has.
+  Lines 26-29: read the maximum from config (10). If the user has
+               reached it, throw an error.
+  Line 31: the address becomes the default if it is the user's FIRST one
+           ($count === 0), or if the caller asked for IsDefault = 1.
+  Line 33: beginTransaction() (all or nothing).
+  Lines 34-36: if it will be the default, first set all the user's other
+               addresses to not default (clearDefault).
+  Lines 37-57: insert the new row with a prepared statement.
+  Line 58: get the new ID.
+  Line 59: commit() saves everything together.
+  Line 61: return the new ID.
+  SAY: "Changing the default address and adding the new address happen inside
+       one transaction. First the old default is cleared, then the new
+       address is inserted, and only then is everything committed. This
+       means there is never a moment where a user has two default
+       addresses. If something goes wrong before the commit, the changes
+       are not saved."
+
+LINES 64-70 getById()   one address or null (numbers made real by
+                        format()).
+LINES 72-78 getByUser() all addresses of a user, default first
+                        (ORDER BY IsDefault DESC, AddressID).
+
+LINES 80-108 update($addressId, $userId, $data)
+  Line 83: getOwned(): the address must exist AND belong to this user.
+  Line 84: validate only the fields that were sent.
+  Lines 85-87: nothing sent: throw.
+  Lines 88-90: you cannot just switch the default OFF. You must make
+               another address the default. This way a user always has
+               one default.
+  Line 92: begin transaction.
+  Lines 93-95: if this address is becoming the default, clear the others.
+  Lines 96-104: build and run the UPDATE (same safe pattern as profile).
+  Line 105: commit.
+  Line 107: return the updated address.
+
+LINES 110-126 delete($addressId, $userId)
+  Line 113: it must be the user's own address.
+  Lines 115-117: delete it, inside a transaction.
+  Lines 119-124: if it was the default, the user's newest remaining
+               address (highest AddressID) becomes the default. If there
+               are no more addresses, that UPDATE changes nothing.
+  Line 125: commit.
+
+LINES 128-136 getOwned()
+  If the address does not exist OR belongs to someone else, it throws the
+  same "Address not found." Nobody can find out that another person's
+  address exists.
+  SAY: "Someone else's address looks exactly like an address that does not
+       exist. When a user asks for an address that belongs to another
+       user, the code throws the same 'Address not found' error. This
+       way, nobody can find out whether another person's address exists.
+       It is a small detail, but it protects the privacy of the other
+       users."
+
+LINES 138-142 clearDefault()   sets IsDefault = 0 for all of a user's
+                               addresses.
+
+LINES 144-195 validate($data, $isNew)
+  For a NEW address every field is required, except the middle name.
+  For a CHANGE, only the fields that were sent are checked.
+  Lines 150-152 first name, 153-155 middle name (optional), 156-158 last
+  name, 159-161 phone (09 format), 162-176 house/unit, street, barangay,
+  city and province (each with its own maximum length).
+  Lines 177-183: PostalCode must be EXACTLY 4 digits (pattern ^\d{4}$).
+  Lines 184-186: AddressType must be Home, Work or Other.
+  Lines 187-193: IsDefault is turned into 1 or 0. filter_var understands
+  true/false, "yes", "no", 1, 0. Anything else throws "IsDefault must be
+  true or false."
+
+LINES 197-207 format()
+  Turns AddressID, UserID and IsDefault into real numbers (PDO gives
+  everything as text), so the JSON shows 5 and not "5".
+
+
+=====================================================================
+ 12. classes/KycVerification.php   (168 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  Handles the `kyc_verification` table: the seller ID check ("Know Your
+  Customer"). A user sends an ID type, ID number, an ID photo and a
+  selfie. An admin approves or rejects it. The ID NUMBER IS SAVED
+  ENCRYPTED AND IS NEVER RETURNED.
+  Status flow: Pending -> Approved or Rejected.
+
+LINES 12-14 Three status names as constants: Pending, Approved, Rejected.
+LINES 16-19 ID_TYPES: the 9 accepted ID types.
+LINES 21-23 COLUMNS: the columns we select. IDNumber is left out ON
+            PURPOSE, so no read method can leak it.
+LINES 25-28 Constructor: gets the connection.
+
+LINES 30-61 submit($userId, $data)
+  Line 33: the ID type must be in the list.
+  Lines 34-37: ID number: text up to 50 characters, then a pattern: 4 to
+               50 characters of letters, numbers, spaces or hyphens.
+  Lines 38-39: the two photo addresses are checked by fileUrl().
+  Lines 41-45: the user must exist.
+  Lines 47-53: look at the user's latest request. If it is Pending:
+               "You already have an ID check waiting for review." If it
+               is Approved: "Your ID is already verified." (If it was
+               Rejected, the user may send a new one.)
+  Lines 55-60: insert with status Pending. Look at line 59:
+               Crypto::encrypt($idNumber). The ID number is encrypted
+               BEFORE it goes in the database.
+  SAY: "The database never holds the real ID number, only the encrypted text.
+       The ID number is encrypted by Crypto::encrypt() before it is
+       inserted. All of the read methods leave the IDNumber column out,
+       so even by accident it cannot be returned. This protects the
+       sellers' private information."
+
+LINES 63-68 getById()        one request (without the ID number).
+LINES 70-76 getLatestByUser() the newest request of a user, or null.
+
+LINES 78-96 getAll($status, $limit, $offset)   for the admin
+  Line 81: limit is forced between 1 and 100.
+  Line 82: offset cannot be negative.
+  Lines 86-90: if a status filter was given, check it is valid and add a
+               WHERE.
+  Line 91: add ORDER BY KYCID (oldest first, so the longest waiting is on
+           top) with LIMIT and OFFSET. The comment explains: these two
+           are whole numbers we made safe in lines 81-82, so putting
+           them directly in the SQL is safe.
+
+LINES 98-111 approve($kycId, $reviewedByAdminId)
+  Line 101: the admin ID must be a valid number.
+  Line 102: requirePending(): the request must exist and be Pending.
+  Lines 104-109: UPDATE the status to Approved, set VerifiedAt = now, save
+               the admin ID, clear any rejection reason. "WHERE KYCID = ?
+               AND VerificationStatus = Pending" means that if two
+               admins click at the same time, only one change goes
+               through.
+  Line 110: return the updated request.
+
+LINES 113-127 reject($kycId, $reviewedByAdminId, $reason)
+  Same as approve, but a reason is REQUIRED (line 117, up to 1000
+  characters), and VerifiedAt is NULL.
+
+LINES 129-143 toStatusView($userId, $kyc)
+  The short version for other modules: only the status and dates. No
+  photos, no ID number. If the user never sent anything, it returns
+  "NotSubmitted".
+
+LINES 145-154 requirePending()   private helper
+  Not found: "KYC request not found." (404). Not Pending: "This request
+  was already Approved/Rejected." (400).
+
+LINES 156-167 format()   private: makes the IDs real numbers.
+
+SAY (summary):
+  "KYC is the seller ID check. The user sends the ID type, the ID
+  number, a photo of the ID and a selfie, and the request waits as
+  Pending. An admin then decides once, either Approved or Rejected, and
+  a rejection needs a reason. The ID number is encrypted and never comes
+  back out, and other modules only see the status."
+
+
+=====================================================================
+ 13. classes/User.php   (476 lines)   THE MAIN ONE
+=====================================================================
+
+WHAT THIS FILE IS
+  Handles the `user` table and brings the other classes together:
+  register, login, social login, edit, change password, verify email or
+  phone, reset password, suspend and reactivate, and the admin list.
+
+LINES 2-8   Loads Database, Validator, Crypto, UserProfile, UserRole,
+            AuthIdentity and VerificationToken.
+
+LINES 14-25 Constants and properties
+  ACTIVE = "Active", SUSPENDED = "Suspended".
+  SAFE_COLUMNS lists the columns we are allowed to return. PasswordHash
+  is NOT in it. That is why no normal method can leak the hash.
+
+LINES 27-34 Constructor
+  Gets the connection and creates helper objects: profiles, roles,
+  identities, tokens.
+  SAY: "User is the boss of the module. It uses the other classes as helpers:
+       the profile, the roles, the social identities and the tokens.
+       Most of the features that a user sees, like sign up, login and
+       password reset, are methods in this class. The other classes do
+       the smaller jobs, and User puts them together."
+
+---------------------------------------------------------------------
+ register($data)   LINES 42-66      (YOUR MAIN EXAMPLE: learn this one)
+---------------------------------------------------------------------
+  1. Validate everything: first name, last name (name rules), email,
+     phone (normalized to 09...), password (8+, letter and number).
+  2. requireEmailFree() and requirePhoneFree(): refuse if the email or
+     phone is already used.
+  3. The profile data is validated BEFORE anything is inserted. The
+     username base is the part of the email before the @ (line using
+     strstr($email, "@", true)).
+  4. password_hash(): the password is turned into a one-way hash. The
+     real password is never saved.
+  5. beginTransaction(). Inside it: insertUser (the user row), then
+     profile create, then roles->assignByName("buyer"), then commit().
+  6. Return the new UserID.
+  SAY: "Register checks every field first, and it checks that the email and
+       phone are not already used. Then it hashes the password and, in
+       one transaction, creates the user, the profile and the buyer
+       role. Either all three are saved, or none of them is. This means
+       the database never ends up with half a user."
+  If someone asks about a failure in the middle: "If something fails
+  before commit, the changes are not saved. The code has no explicit
+  rollBack line. The database discards the unfinished transaction when
+  the request ends and the connection closes."
+
+---------------------------------------------------------------------
+ login($identifier, $password)   LINES 73-90
+---------------------------------------------------------------------
+  1. Validate that something was typed for both fields.
+  2. findByIdentifier(): the identifier is an email (if it has @) or a
+     phone number.
+  3. If there is no such user, OR the user has no password (a social
+     login account), OR password_verify() says the password is wrong:
+     throw ONE message: the same text for all three cases. A hacker
+     cannot tell whether the email exists.
+  4. Only after the password is correct: requireActive(). A suspended
+     user gets ForbiddenException "suspended" (HTTP 403).
+  5. markLoggedIn() saves the last login time and returns the user
+     without the hash.
+  SAY: "Wrong email and wrong password give the same error message. Because of
+       this, nobody can use the login form to guess which emails are
+       registered. The same message is also used when an account has no
+       password, for example a Google-only account. Only after the
+       password is correct does the code check whether the account is
+       suspended."
+  HONEST NOTE: the suspended message only appears when the password is
+  right. A wrong password on a suspended account gives the normal
+  "wrong email or password" message.
+
+---------------------------------------------------------------------
+ socialLogin(...)   LINES 98-147   (Google or Facebook)
+---------------------------------------------------------------------
+  Three cases, in this order:
+  1. The Google/Facebook account is already linked: log in that user
+     (after checking the user is Active, lines 104-109).
+  2. A user with that EMAIL already exists:
+       - if the email was NOT verified (EmailVerifiedAt is null),
+         refuse. Otherwise someone could create a Google account with
+         your email and take over your account.
+       - if it was verified: check the user is active, link the social
+         account, and log in.
+  3. Nobody exists: create a new user with no password (null), with the
+     email already marked verified, an optional phone ("" if missing),
+     inside a transaction: user, profile, buyer role, and the identity
+     link.
+  SAY: "Social login only attaches to an existing account if the email was
+       already verified. If we linked an unverified account, a stranger
+       could register your email first and then take over your Google
+       login. So in that case the system refuses and asks the user to
+       log in with the password and verify the email first. This blocks
+       account takeover."
+
+---------------------------------------------------------------------
+ READING USERS   LINES 154-205
+---------------------------------------------------------------------
+  getById (154-159)   one user, without the hash (SAFE_COLUMNS).
+  getAll (162-194)    the admin list:
+     - status filter is checked with oneOf().
+     - search looks in name, email and phone with LIKE. The special
+       characters % and _ typed by the user are escaped, so they are
+       treated as normal letters.
+     - limit default 20, maximum 100; offset 0 or more. These two are
+       made into whole numbers first, so they are safe in the SQL.
+  toPublic (197-205)  what OTHER users may see: only UserID, FirstName,
+     LastName and DateJoined. No email, phone or status.
+
+---------------------------------------------------------------------
+ update($userId, $data)   LINES 213-261
+---------------------------------------------------------------------
+  Changes only the fields that were sent (names, email, phone). A new
+  email or phone is checked to be free (requireEmailFree/PhoneFree). If
+  the EMAIL is different from the current one, EmailVerifiedAt is set
+  back to NULL, and the same for the phone and PhoneVerifiedAt. The new
+  value has to be verified again. If nothing was sent: error
+  "Nothing to update". Column names come from our code, never from the
+  caller.
+
+---------------------------------------------------------------------
+ changePassword   LINES 265-279
+---------------------------------------------------------------------
+  The new password goes through the same strength check first. The
+  current password is required only if the account has a password hash:
+  a wrong one gives "The current password is not correct." (A
+  social-login account has none yet, so it can set a first password.)
+
+---------------------------------------------------------------------
+ sendToken / verifyContact / resetPassword   LINES 288-339
+---------------------------------------------------------------------
+  sendToken (288-304): returns NULL (nothing) when the user does not
+     exist, is suspended, is already verified, or has no phone. Otherwise
+     it asks VerificationToken to create a code and returns it. Returning
+     null for unknown users means the answer does not reveal who is
+     registered.
+  verifyContact (307-324): checks the code with VerificationToken. If
+     correct, it saves EmailVerifiedAt or PhoneVerifiedAt = now.
+  resetPassword (327-339): the NEW PASSWORD STRENGTH IS CHECKED FIRST,
+     before the token is used. So typing a weak password does not burn
+     the user's reset code. Then the token is verified, then the new hash
+     is saved.
+
+---------------------------------------------------------------------
+ suspend / reactivate   LINES 346-379
+---------------------------------------------------------------------
+  suspend (346-363): the user must exist, a REASON is required, an admin
+     cannot suspend THEMSELVES, and a user who is already suspended
+     cannot be suspended again. It sets Status = Suspended and saves the
+     reason.
+  reactivate (366-379): sets the user back to Active and clears the
+     reason.
+
+---------------------------------------------------------------------
+ PRIVATE HELPERS (only used inside this class)
+---------------------------------------------------------------------
+  insertUser          the INSERT of a new user row.
+  findRowById         SELECT * including the hash. Private on purpose,
+                      only login and password code use it.
+  findByIdentifier    has "@" -> look up by lowercase email. Otherwise
+                      normalize the phone and look up by phone.
+  requireActive       throws ForbiddenException if suspended.
+  markLoggedIn        saves the last login time.
+  savePassword        saves a new hash.
+  currentValue        reads the current value of a column.
+  requireEmailFree / requirePhoneFree  "already registered" errors.
+  format              makes numbers real numbers.
+  NOTE: Email is UNIQUE in the database. PhoneNumber is NOT unique at
+  the database level, so the phone rule is enforced by this code.
+
+SAY (summary):
+  "User.php is the main class of the module. It validates the input,
+  applies the rules, and saves the data. It never prints anything and
+  never reads the request itself. It returns data or throws an error,
+  and the API files turn that into a response for the browser."
+
+
+=====================================================================
+ 13A. THE TWO MAIN METHODS WITH THEIR CODE (User.php)
+      Read the code on the left, the explanation under each line.
+=====================================================================
+
+---------------------------------------------------------------------
+ register()   User.php lines 42-66
+---------------------------------------------------------------------
+
+42   public function register(array $data): int
+       A public method named register. It receives $data (an array with
+       FirstName, LastName, Email, PhoneNumber, Password) and gives back
+       an int: the new UserID.
+       SAY: "Register takes the sign-up form data and returns the new user's ID. It
+            does this in a fixed order: validate, check that the email
+            and phone are free, hash the password, and save. The data
+            comes in as an array with FirstName, LastName, Email,
+            PhoneNumber and Password. If anything is wrong, an exception
+            is thrown and nothing is saved."
+
+44   $first = Validator::name($data["FirstName"] ?? null, "First name");
+       Checks the first name. "?? null" means: if it was not sent, use
+       null (then the check says it is required). Letters only, up to
+       100 characters. The clean value goes in $first.
+45   $middle = Validator::name($data["MiddleName"] ?? null, "Middle name", false);
+       Same for the middle name, but "false" means it is OPTIONAL.
+46   $last = Validator::name($data["LastName"] ?? null, "Last name");
+       Same for the last name (required).
+47   $email = Validator::email($data["Email"] ?? null);
+       Must be a valid email. It becomes lowercase.
+48   $phone = Validator::phone($data["PhoneNumber"] ?? null);
+       Must be a Philippine mobile number. It becomes 09XXXXXXXXX.
+49   $password = Validator::password($data["Password"] ?? null);
+       8 to 72 characters, at least one letter and one number.
+       If ANY of lines 44-49 fails, an exception is thrown and nothing
+       is saved. The API turns it into HTTP 400.
+
+51   $this->requireEmailFree($email, 0);
+       Asks the database: is this email already used? If yes, throws
+       "This email is already registered." The 0 means "no user to
+       ignore" (it is used for edits, where your own email is fine).
+52   $this->requirePhoneFree($phone, 0);
+       Same for the phone number.
+
+54   // Everything is checked BEFORE the first insert...
+       The comment explains the idea: check first, save later, so a
+       mistake never leaves half a user behind.
+55   $profile = $this->profiles->validate($data, true, 0, (string)strstr($email, "@", true));
+       Checks the profile fields (Username, Bio, birthday) BEFORE
+       inserting anything. "true" = this is a new profile. The last part
+       takes the text of the email before the @ (juan@mail.com gives
+       "juan") to build an automatic username if none was given.
+
+57   $hash = password_hash($password, PASSWORD_DEFAULT);
+       Turns the password into a one-way hash. The real password is
+       never saved. This is the only place a registered password is
+       hashed.
+       SAY: "We save a hash, not the password. A hash is a one-way scramble, so the
+            real password cannot be read from it, even by me or by the
+            database admin. When the user logs in later, password_verify
+            checks the typed password against the hash. This is the only
+            way the password is stored."
+
+59   $this->db->beginTransaction();
+       Starts an "all or nothing" block.
+60   $userId = $this->insertUser($first, $middle, $last, $email, $phone, $hash, false);
+       Inserts the user row and returns the new UserID. The "false" at
+       the end means the email is NOT verified yet.
+61   $this->profiles->create($userId, $profile);
+       Inserts the profile row for that user.
+62   $this->roles->assignByName($userId, "buyer");
+       Gives the user the "buyer" role.
+63   $this->db->commit();
+       Saves all three inserts together.
+
+65   return $userId;
+       Gives the new UserID back to the caller.
+
+IN ONE BREATH:
+  SAY: "Register checks every field, checks that the email and phone are free,
+       and hashes the password. Then, in one transaction, it creates the
+       user, the profile and the buyer role. Either all three are saved
+       or none. Finally, it returns the new UserID to whoever called
+       it."
+IF ASKED "WHAT IF IT FAILS HALFWAY?"
+  SAY: "Everything is validated before the first insert, so a normal mistake
+       never reaches the database. If a database error still happens
+       before commit, the unfinished transaction is not saved. The code
+       has no explicit rollBack line. MySQL discards the unfinished work
+       when the request ends and the connection closes."
+
+
+---------------------------------------------------------------------
+ login()   User.php lines 73-90
+---------------------------------------------------------------------
+
+73   public function login($identifier, $password): array
+       Receives $identifier (an email OR a phone number) and $password.
+       Returns the user as an array (without the password hash).
+
+75   $identifier = Validator::text($identifier, "Email or phone number", 191);
+       The identifier must be text, not empty, at most 191 characters.
+76   if (!is_string($password) || $password === "") {
+77       throw new InvalidArgumentException("Password is required.");
+78   }
+       The password must be text and not empty. If not, error 400.
+
+80   $row = $this->findByIdentifier($identifier);
+       Looks the user up. If the identifier has an "@" it searches by
+       email (lowercase). Otherwise it cleans it as a phone number and
+       searches by phone. $row is the full user row, or null if nobody
+       was found.
+
+82   // One message for every failure...
+83   // A user who signed up with Google/Facebook only has no password...
+       Comments: the code uses one message so nobody can find out which
+       emails or phones exist.
+84   if (!$row || $row["PasswordHash"] === null || !password_verify($password, $row["PasswordHash"])) {
+       Three ways to fail, joined by "or" (||):
+         a) !$row: nobody was found.
+         b) PasswordHash is null: a Google/Facebook-only account with no
+            password.
+         c) password_verify() says the typed password does not match the
+            saved hash.
+85       throw new AuthenticationException("The email/phone number or the password is not correct.");
+       For all three, the SAME message. The API turns it into HTTP 401.
+86   }
+       SAY: "A wrong email and a wrong password get the identical error, so an
+            attacker cannot tell which emails are registered. The same
+            message is used when nobody is found, when the account has
+            no password, and when the password does not match. The code
+            always spends the same path to the message. This is a
+            standard protection for login forms."
+
+87   $this->requireActive($row);
+       Only AFTER the password was correct: if the account is
+       Suspended, throw ForbiddenException ("This account is suspended.
+       Please contact KameraPH support."). HTTP 403.
+       HONEST NOTE: a suspended user with the wrong password just sees
+       the normal wrong-password message.
+
+89   return $this->markLoggedIn((int)$row["UserID"]);
+       Saves LastLoginAt = now and returns the user using getById, which
+       never includes PasswordHash.
+
+IN ONE BREATH:
+  SAY: "Login finds the user by email or phone number and checks the password
+       with password_verify. It gives the same error for every failure
+       and blocks suspended accounts. If everything is fine, it saves
+       the login time and returns the user without the password hash.
+       The hash never leaves the User class."
+
+
+=====================================================================
+ 14. classes/ModuleApi.php   (69 lines)
+=====================================================================
+
+WHAT THIS FILE IS
+  Lets Module 1 talk to OTHER modules (notifications in Module 4, system
+  logs in Module 10). It is OFF by default (call_other_modules = false),
+  so Module 1 works alone. It is used by the API files, not by the
+  classes.
+
+LINES 4-6   Comment: it only uses the addresses in config.php, and when
+            the other module is off or silent, the methods quietly
+            return false. They never throw and never stop the real
+            action.
+
+LINES 9-34  call($moduleName, $method, $path, $body)
+  Lines 12-15: look up the module's address in config. Unknown: return
+               [0, null].
+  Line 17: curl_init with the address + path.
+  Line 18: the HTTP method (POST...).
+  Line 19: return the answer as text.
+  Lines 20-21: wait at most 3 seconds to connect and 10 seconds in
+               total.
+  Lines 22-25: send JSON, and the X-Module-Key header (the shared
+               secret).
+  Lines 26-28: if there is a body, send it as JSON.
+  Lines 29-31: run, read the HTTP code, close.
+  Line 33: return [code, data].
+
+LINES 36-51 notifyUser(...)
+  If call_other_modules is false: return false (do nothing). Otherwise
+  POST to Module 4 "/notifications.php". True if the code is 200 or 201.
+
+LINES 53-68 logAction(...)
+  Same, for Module 10 "/logs.php": who did what to which record, and
+  from which IP address.
+
+
+=====================================================================
+ 15. HONEST NOTES (say these first if the professor pokes)
+=====================================================================
+
+  - TRANSACTIONS: used in register, social login, address create /
+    update / delete, and token create. There is no explicit rollBack
+    line. If something fails before commit(), the database drops the
+    unfinished work when the request ends.
+  - LOGIN MESSAGE: one generic message for unknown email, no password
+    and wrong password. The "suspended" message only shows after the
+    password is correct.
+  - PASSWORD LIMIT: maximum 72 characters. That is a limit of the
+    hashing method.
+  - SINGLE USE CODES: a code works once, expires (30 / 10 / 30 minutes
+    from config), and a newer code cancels older ones.
+  - show_token_in_response = true is DEMO MODE. A real system would
+    send the code by email or SMS. Set it to false for the final demo.
+  - ModuleApi is OFF by default. Other modules are not ready.
+  - SOCIAL LOGIN IS SIMULATED: User.php lines 96-97 say a real system
+    must first ask Google/Facebook if the token is real. KameraPH
+    pretends to be the provider, so the data sent in is trusted.
+  - ENCRYPTION KEY: everyone should use their own and not change it
+    later, or old encrypted ID numbers cannot be read.
+  - PhoneNumber is not unique in the database, only in the code. Email is
+    unique in the database.
+  - The backend has no pages. The API files (waiter) call the classes
+    (kitchen), and the classes talk to MySQL (fridge). The API and the
+    frontend are done by other groupmates.
+
+
+=====================================================================
+ 16. THE 12 SENTENCES TO REMEMBER
+=====================================================================
+
+  1. "config.php holds all settings in one place."
+  2. "Database.php makes one PDO connection that everything shares."
+  3. "Every query is a prepared statement, so SQL injection cannot work."
+  4. "Validator checks every input in one place."
+  5. "Passwords are hashed with password_hash. We never save the real
+      password."
+  6. "ID numbers are encrypted with AES-256-GCM, and never returned."
+  7. "Codes are hashed, used once, and they expire."
+  8. "Login gives the same error for wrong email and wrong password."
+  9. "Register creates the user, the profile and the buyer role in one
+      transaction."
+ 10. "Social login only links to an email that is already verified."
+ 11. "Classes never print or read the request. They return data or throw
+      errors, and the API turns errors into 400, 401, 403, 404."
+ 12. "A suspended user cannot log in, and an admin cannot suspend
+      themselves."
+
+=====================================================================
+ END
+=====================================================================

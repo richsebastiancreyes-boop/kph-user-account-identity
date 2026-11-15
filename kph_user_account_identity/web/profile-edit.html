@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Account settings | KameraPH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/kph.css">
+  <link rel="stylesheet" href="css/module.css">
+  <!-- keeps the light/dark choice without a flash -->
+  <script>try{var t=localStorage.getItem("kph-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <style>
+    /* the kit's .form and .card styles would otherwise show elements that are marked hidden */
+    [hidden] { display: none !important; }
+    /* Account pages (kit colors only) */
+    .avatar { width: 72px; height: 72px; flex: none; border-radius: 50%; overflow: hidden; display: grid; place-items: center;
+      background: var(--soft); color: var(--orange-text); font-size: 28px; font-weight: 700; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .account-head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .account-head .who { flex: 1; min-width: 160px; }
+    .account-head h2 { margin: 0 0 2px; }
+    .account-head p { margin: 0 0 6px; }
+    .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+    .tiles a { padding: 12px 4px; border-radius: var(--radius-sm); color: var(--text); font-size: 13px; }
+    .tiles a:hover { background: var(--soft); text-decoration: none; }
+    .menu a { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 4px;
+      border-bottom: 1px solid var(--border); color: var(--text); }
+    .menu a:last-child { border-bottom: 0; }
+    .menu a:hover { text-decoration: none; color: var(--orange-text); }
+    .menu .chev { color: var(--muted); }
+    .menu .danger { color: var(--bad); }
+    .card-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .card-title h3 { margin: 0; }
+    .pic-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+<!-- ===== KAMERAPH HEADER (copy as is, do not edit) ===== -->
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="kph-topbar">
+  <div class="kph-topbar-inner">
+    <span>Free Shipping on orders over ₱2,000</span>
+    <div class="kph-topbar-mid hide-mobile">
+      <span>100% Authentic Product</span>
+      <span>1 Year Warranty</span>
+      <span>Easy Return</span>
+    </div>
+    <span class="hide-mobile">Need Help? 0999 999 9999</span>
+  </div>
+</div>
+<header class="kph-header">
+  <div class="kph-header-inner">
+    <a class="kph-logo" href="#" aria-label="KameraPH home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </a>
+    <nav class="kph-nav" id="kph-nav" aria-label="Main"></nav>
+    <div class="kph-search" id="kph-search">
+      <form id="kph-search-form" role="search">
+        <input type="search" placeholder="Search cameras, lenses, accessories" aria-label="Search">
+        <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      </form>
+    </div>
+    <div class="kph-icons">
+      <button class="icon-btn only-mobile" id="kph-search-toggle" type="button" aria-label="Open search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="kph-theme-toggle" type="button" aria-label="Switch between light and dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <a class="icon-btn" data-kph-link="account" href="#" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="icon-btn" data-kph-link="wishlist" href="#" aria-label="Wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="dot" hidden></span></a>
+      <a class="icon-btn" data-kph-link="cart" href="#" aria-label="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span class="dot" hidden></span></a>
+    </div>
+  </div>
+</header>
+<!-- ===== END HEADER ===== -->
+
+<main id="main" class="container">
+  <div style="max-width:720px;margin:0 auto">
+    <h2 class="section-title">My Profile</h2>
+    <p id="status" class="status-msg">Loading...</p>
+
+    <form id="form" class="card form" hidden novalidate>
+      <div class="pic-row">
+        <div class="avatar" id="avatar"></div>
+        <div class="field">
+          <label for="pic">Profile picture</label>
+          <input id="pic" name="ProfilePicture" type="file" accept="image/*">
+          <span class="field-hint">JPG or PNG.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="un">Username</label>
+        <input id="un" name="Username" maxlength="100" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="fn">First name</label>
+        <input id="fn" name="FirstName" maxlength="100" required autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label for="mn">Middle name (optional)</label>
+        <input id="mn" name="MiddleName" maxlength="100" autocomplete="additional-name">
+      </div>
+      <div class="field">
+        <label for="ln">Last name</label>
+        <input id="ln" name="LastName" maxlength="100" required autocomplete="family-name">
+      </div>
+      <div class="field" id="em-field">
+        <label for="em-cur">Email</label>
+        <input id="em-cur" type="text" readonly>
+        <div class="row" style="margin-top:8px">
+          <span class="badge" id="em-badge"></span>
+          <button class="btn btn-sm" type="button" id="em-verify" hidden>Verify</button>
+          <button class="btn btn-sm btn-outline" type="button" id="em-change">Change</button>
+        </div>
+        <div id="em-vbox" hidden class="stack" style="margin-top:8px">
+          <input class="code-input" id="em-vcode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" aria-label="6-digit code">
+          <div class="row">
+            <button class="btn btn-sm" type="button" id="em-vconfirm">Confirm</button>
+            <button class="btn btn-sm btn-outline" type="button" id="em-vcancel">Cancel</button>
+          </div>
+          <p class="test-code" id="em-vtest" hidden></p>
+          <div id="em-vmsg" role="status"></div>
+        </div>
+        <div id="em-edit" hidden class="stack" style="margin-top:8px">
+          <input id="em-new" type="email" maxlength="191" autocomplete="email" placeholder="New email" aria-label="New email">
+          <div class="row">
+            <button class="btn btn-sm" type="button" id="em-send">Send code</button>
+            <button class="btn btn-sm btn-outline" type="button" id="em-cancel">Cancel</button>
+          </div>
+          <div id="em-codebox" hidden class="stack">
+            <input class="code-input" id="em-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" aria-label="6-digit code">
+            <button class="btn btn-sm" type="button" id="em-confirm">Confirm</button>
+          </div>
+          <p class="test-code" id="em-test" hidden></p>
+          <div id="em-msg" role="status"></div>
+        </div>
+      </div>
+      <div class="field" id="ph-field">
+        <label for="ph-cur">Phone number</label>
+        <input id="ph-cur" type="text" readonly>
+        <div class="row" style="margin-top:8px">
+          <span class="badge" id="ph-badge"></span>
+          <button class="btn btn-sm" type="button" id="ph-verify" hidden>Verify</button>
+          <button class="btn btn-sm btn-outline" type="button" id="ph-change">Change</button>
+        </div>
+        <div id="ph-vbox" hidden class="stack" style="margin-top:8px">
+          <input class="code-input" id="ph-vcode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" aria-label="6-digit code">
+          <div class="row">
+            <button class="btn btn-sm" type="button" id="ph-vconfirm">Confirm</button>
+            <button class="btn btn-sm btn-outline" type="button" id="ph-vcancel">Cancel</button>
+          </div>
+          <p class="test-code" id="ph-vtest" hidden></p>
+          <div id="ph-vmsg" role="status"></div>
+        </div>
+        <div id="ph-edit" hidden class="stack" style="margin-top:8px">
+          <input id="ph-new" type="tel" maxlength="191" autocomplete="tel" placeholder="New phone number" aria-label="New phone number">
+          <div class="row">
+            <button class="btn btn-sm" type="button" id="ph-send">Send code</button>
+            <button class="btn btn-sm btn-outline" type="button" id="ph-cancel">Cancel</button>
+          </div>
+          <div id="ph-codebox" hidden class="stack">
+            <input class="code-input" id="ph-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" aria-label="6-digit code">
+            <button class="btn btn-sm" type="button" id="ph-confirm">Confirm</button>
+          </div>
+          <p class="test-code" id="ph-test" hidden></p>
+          <div id="ph-msg" role="status"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="dob">Birthday</label>
+        <input id="dob" name="DateOfBirth" type="date">
+      </div>
+      <div class="field">
+        <label for="bio">Bio</label>
+        <textarea id="bio" name="Bio" maxlength="500"></textarea>
+      </div>
+      <button class="btn btn-block" type="submit">Save</button>
+      <div id="msg" role="status"></div>
+    </form>
+
+    <p class="muted" style="margin-top:16px"><a href="profile.html">Back to my account</a></p>
+  </div>
+</main>
+
+<!-- ===== KAMERAPH FOOTER (copy as is, do not edit) ===== -->
+<footer class="kph-footer">
+  <div class="kph-footer-inner">
+    <div class="kph-logo">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </div>
+    <p class="kph-footer-note only-mobile">Your one-stop shop for professional gear.</p>
+    <p class="kph-footer-copy">© 2026 KameraPH. All rights reserved.</p>
+  </div>
+</footer>
+<!-- ===== END FOOTER ===== -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/kph-ui.js"></script>
+<script src="js/demo.js"></script>
+<script>
+  // Live API mode enabled
+  const USE_API = true;
+
+  //the account saved in this browser
+  function demoUser() { return KPHDemo.currentUser(); }
+
+  // Hides part of the email and phone
+  function maskEmail(e) {
+    const [name, domain] = String(e || "").split("@");
+    return name ? name.charAt(0) + "*".repeat(Math.max(name.length - 1, 2)) + "@" + (domain || "") : "";
+  }
+  function maskPhone(p) {
+    const s = String(p || "").replace(/\s/g, "");
+    return s ? "*".repeat(Math.max(s.length - 2, 0)) + s.slice(-2) : "";
+  }
+
+  const form = document.getElementById("form");
+  const avatar = document.getElementById("avatar");
+  let user;
+
+  function drawAvatar(url) {
+    const letter = (form.Username.value || user.FirstName || "?").charAt(0).toUpperCase();
+    avatar.innerHTML = url ? '<img src="' + escapeHtml(url) + '" alt="">' : escapeHtml(letter);
+  }
+
+  function fill(u) {
+    user = u;
+    form.Username.value = u.Username || "";
+    form.FirstName.value = u.FirstName || "";
+    form.MiddleName.value = u.MiddleName || "";
+    form.LastName.value = u.LastName || "";
+    form.DateOfBirth.value = u.DateOfBirth || "";
+    form.Bio.value = u.Bio || "";
+    paintContacts(u);
+    drawAvatar(u.ProfilePictureURL);
+    form.hidden = false;
+  }
+
+  // Picture preview (the real upload needs the API)
+  document.getElementById("pic").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) drawAvatar(URL.createObjectURL(file));
+  });
+
+  async function load() {
+    const status = document.getElementById("status");
+    try {
+      let u;
+      if (!USE_API) {
+        u = demoUser();
+      } else {
+        const id = new URLSearchParams(location.search).get("id") || (window.KPHAuth ? KPHAuth.getUserId() : "");
+        u = await apiGet("/users.php" + (id ? "?id=" + encodeURIComponent(id) : ""));
+      }
+      status.textContent = "";
+      fill(u);
+    } catch (err) {
+      status.className = "alert alert-error";
+      status.textContent = err.message;
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById("msg");
+    msg.className = ""; msg.textContent = "";
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+
+    const body = {
+      Username: form.Username.value.trim(),
+      FirstName: form.FirstName.value.trim(),
+      MiddleName: form.MiddleName.value.trim(),
+      LastName: form.LastName.value.trim(),
+      DateOfBirth: form.DateOfBirth.value,
+      Bio: form.Bio.value.trim()
+    };
+    if (!body.MiddleName) delete body.MiddleName;
+    if (!body.DateOfBirth) delete body.DateOfBirth;
+
+    try {
+      if (!USE_API) {
+        //remember it in this browser 
+        KPHDemo.saveUser({
+          Username: form.Username.value.trim(), FirstName: form.FirstName.value.trim(),
+          MiddleName: form.MiddleName.value.trim(), LastName: form.LastName.value.trim(),
+          DateOfBirth: form.DateOfBirth.value, Bio: form.Bio.value.trim()
+        });
+      } else {
+        // legit
+        await apiSend("PUT", "/users.php?id=" + encodeURIComponent(user.UserID), body);
+      }
+      // Saved go back to the account page for new INFORMATIONNN
+      location.href = "profile.html?id=" + encodeURIComponent(user.UserID);
+    } catch (err) {
+      msg.className = "alert alert-error";
+      msg.textContent = err.message;
+    }
+  });
+
+  // ----- Email and phone: a new value is only saved after the 6-digit code sent to it -----
+  function paintContacts(u) {
+    const items = { em: [maskEmail(u.Email), u.EmailVerifiedAt], ph: [maskPhone(u.PhoneNumber), u.PhoneVerifiedAt] };
+    Object.keys(items).forEach((k) => {
+      document.getElementById(k + "-cur").value = items[k][0];
+      const b = document.getElementById(k + "-badge");
+      b.textContent = items[k][1] ? "Verified" : "Not verified";
+      b.className = "badge " + (items[k][1] ? "badge-ok" : "badge-orange");
+      document.getElementById(k + "-verify").hidden = !!items[k][1];
+      if (items[k][1]) document.getElementById(k + "-vbox").hidden = true;
+    });
+  }
+
+  function setupChange(k, type) {
+    const $ = (s) => document.getElementById(k + "-" + s);
+    const show = (text, ok) => { $("msg").className = text ? "alert " + (ok ? "alert-ok" : "alert-error") : ""; $("msg").textContent = text || ""; };
+    function reset() {
+      $("edit").hidden = true; $("codebox").hidden = true; $("test").hidden = true;
+      $("new").value = ""; $("code").value = ""; show("");
+      $("change").hidden = false;
+    }
+    // ----- Verify the email or phone you already have -----
+    const vshow = (text, ok) => { $("vmsg").className = text ? "alert " + (ok ? "alert-ok" : "alert-error") : ""; $("vmsg").textContent = text || ""; };
+    async function sendVerifyCode() {
+      vshow("");
+      if (!USE_API) {
+        const r = KPHDemo.sendCode(type);
+        vshow("Code sent to " + r.to + ". It works for " + r.minutes + " minutes.", true);
+        // There is no email or SMS yet, so the code is shown here for testing.
+        $("vtest").hidden = false;
+        $("vtest").innerHTML = "Test code: <b>" + r.code + "</b>";
+        return;
+      }
+      // Real mode: "/verification.php" emails or texts the code
+      const r = await apiSend("POST", "/verification.php", { Type: type });
+      vshow("Code sent to " + (r.to || type) + ". It works for " + (r.minutes || 15) + " minutes.", true);
+      if (r.code) {
+        $("vtest").hidden = false;
+        $("vtest").innerHTML = "Test code: <b>" + escapeHtml(r.code) + "</b>";
+      }
+    }
+    $("verify").addEventListener("click", async () => {
+      $("vbox").hidden = false; $("vcode").value = "";
+      try { await sendVerifyCode(); } catch (err) { vshow(err.message); }
+      $("vcode").focus();
+    });
+    $("vcancel").addEventListener("click", () => { $("vbox").hidden = true; $("vtest").hidden = true; vshow(""); });
+    $("vcode").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("vconfirm").click(); } });
+    $("vconfirm").addEventListener("click", async () => {
+      vshow("");
+      try {
+        if (!USE_API) {
+          const r = KPHDemo.verifyCode(type, $("vcode").value);
+          if (!r.ok) { vshow(r.error); return; }
+          user = demoUser();
+        } else {
+          await apiSend("PUT", "/verification.php", { Type: type, Code: $("vcode").value.trim() });
+          user = await apiGet("/users.php?id=" + encodeURIComponent(user.UserID));
+        }
+        paintContacts(user);
+        $("vtest").hidden = true;
+        vshow(type === "email" ? "Email verified." : "Phone number verified.", true);
+        $("vbox").hidden = false; $("vcode").hidden = true; $("vconfirm").hidden = true; $("vcancel").hidden = true;
+        setTimeout(() => { $("vbox").hidden = true; $("vcode").hidden = false; $("vconfirm").hidden = false; $("vcancel").hidden = false; vshow(""); }, 2500);
+      } catch (err) { vshow(err.message); }
+    });
+
+    $("change").addEventListener("click", () => { $("edit").hidden = false; $("change").hidden = true; $("new").focus(); });
+    $("cancel").addEventListener("click", reset);
+    // Enter inside these boxes must not save the whole form
+    [$("new"), $("code")].forEach((el) => el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); (el === $("new") ? $("send") : $("confirm")).click(); }
+    }));
+
+    $("send").addEventListener("click", async () => {
+      show("");
+      if (!USE_API) {
+        const r = KPHDemo.startChange(type, $("new").value);
+        if (!r.ok) { show(r.error); return; }
+        $("codebox").hidden = false;
+        show("Code sent to " + r.to + ". It works for " + r.minutes + " minutes.", true);
+        // There is no email or SMS yet, so the code is shown here for testing.
+        $("test").hidden = false;
+        $("test").innerHTML = "Test code: <b>" + r.code + "</b>";
+        return;
+      }
+      // Real mode: "/contact-change.php" emails or texts the code to the NEW value
+      try {
+        const r = await apiSend("POST", "/contact-change.php", { Type: type, Value: $("new").value.trim() });
+        $("codebox").hidden = false;
+        show("Code sent to " + (r.to || type) + ". It works for " + (r.minutes || 15) + " minutes.", true);
+        if (r.code) {
+          $("test").hidden = false;
+          $("test").innerHTML = "Test code: <b>" + escapeHtml(r.code) + "</b>";
+        }
+      } catch (err) { show(err.message); }
+    });
+
+    $("confirm").addEventListener("click", async () => {
+      show("");
+      try {
+        if (!USE_API) {
+          const r = KPHDemo.verifyChange(type, $("code").value);
+          if (!r.ok) { show(r.error); return; }
+          user = demoUser();
+        } else {
+          await apiSend("PUT", "/contact-change.php", { Type: type, Value: $("new").value.trim(), Code: $("code").value.trim() });
+          user = await apiGet("/users.php?id=" + encodeURIComponent(user.UserID));
+          if (window.KPHAuth) KPHAuth.saveSession(null, user);
+        }
+        paintContacts(user);
+        reset();
+        show(type === "email" ? "Email changed and verified." : "Phone number changed and verified.", true);
+        $("edit").hidden = false; $("send").hidden = true; $("cancel").hidden = true; $("new").hidden = true;
+        setTimeout(() => { $("edit").hidden = true; $("send").hidden = false; $("cancel").hidden = false; $("new").hidden = false; show(""); }, 2500);
+      } catch (err) { show(err.message); }
+    });
+  }
+  setupChange("em", "email");
+  setupChange("ph", "phone");
+
+  load();
+  KPHDemo.syncBadges();
+</script>
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Addresses | KameraPH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/kph.css">
+  <link rel="stylesheet" href="css/module.css">
+
+  <!-- keeps the light/dark choice without a flash -->
+
+  <script>try{var t=localStorage.getItem("kph-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  
+  <style>
+
+    /* Location picker (uses the kit's color variables only) */
+    .loc-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      font: inherit; text-align: left; color: var(--text); background: var(--field);
+      border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; cursor: pointer; }
+    .loc-btn .loc-placeholder { color: var(--muted); }
+    .loc-btn svg { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--muted); stroke-width: 2; transition: transform .15s; }
+    .loc-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+    .loc-panel { margin-top: 6px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+    .loc-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .loc-tabs .sep { color: var(--muted); }
+    .loc-tab { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; padding: 4px 2px; color: var(--text); cursor: pointer; }
+    .loc-tab[disabled] { color: var(--muted); cursor: default; }
+    .loc-tab.active { color: var(--orange-text); border-bottom-color: var(--orange); font-weight: 600; }
+    .loc-options { list-style: none; margin: 0; padding: 0; max-height: 240px; overflow-y: auto; }
+    .loc-option { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      font: inherit; text-align: left; color: var(--text); background: none; border: 0;
+      border-bottom: 1px solid var(--border); padding: 12px; cursor: pointer; }
+    .loc-option:hover { background: var(--soft); }
+    .loc-option .arrow { color: var(--muted); }
+  </style>
+</head>
+
+<body>
+<!-- ===== KAMERAPH HEADER (copy as is, do not edit) ===== -->
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="kph-topbar">
+  <div class="kph-topbar-inner">
+    <span>Free Shipping on orders over ₱2,000</span>
+    <div class="kph-topbar-mid hide-mobile">
+      <span>100% Authentic Product</span>
+      <span>1 Year Warranty</span>
+      <span>Easy Return</span>
+    </div>
+    <span class="hide-mobile">Need Help? 0999 999 9999</span>
+  </div>
+</div>
+<header class="kph-header">
+  <div class="kph-header-inner">
+    <a class="kph-logo" href="#" aria-label="KameraPH home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </a>
+    <nav class="kph-nav" id="kph-nav" aria-label="Main"></nav>
+    <div class="kph-search" id="kph-search">
+      <form id="kph-search-form" role="search">
+        <input type="search" placeholder="Search cameras, lenses, accessories" aria-label="Search">
+        <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      </form>
+    </div>
+    <div class="kph-icons">
+      <button class="icon-btn only-mobile" id="kph-search-toggle" type="button" aria-label="Open search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="kph-theme-toggle" type="button" aria-label="Switch between light and dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <a class="icon-btn" data-kph-link="account" href="#" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="icon-btn" data-kph-link="wishlist" href="#" aria-label="Wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="dot" hidden></span></a>
+      <a class="icon-btn" data-kph-link="cart" href="#" aria-label="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span class="dot" hidden></span></a>
+    </div>
+  </div>
+
+</header>
+<!-- ===== END HEADER ===== -->
+
+<main id="main" class="container">
+  <div style="max-width:720px;margin:0 auto">
+    <h2 class="section-title">My Addresses</h2>
+    <p id="status" class="status-msg">Loading...</p>
+    <div id="list" class="stack"></div>
+
+    <br>
+    <h2 class="section-title" id="formTitle">Add a new address</h2>
+    <form id="form" class="card form" novalidate>
+      <div class="field">
+        <label for="fullname">Full name</label>
+        <input id="fullname" name="RecipientFullName" maxlength="300" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="ph">Phone number</label>
+        <input id="ph" name="PhoneNumber" type="tel" maxlength="20" required autocomplete="tel">
+      </div>
+
+      <div class="field">
+        <label for="loc">Region, Province, City, Barangay</label>
+        <button type="button" id="loc" class="loc-btn" aria-expanded="false" aria-controls="locPanel">
+          <span id="locText" class="loc-placeholder">Region › Province › City › Barangay</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="locPanel" class="loc-panel" hidden>
+          <div id="locTabs" class="loc-tabs"></div>
+          <ul id="locOptions" class="loc-options"></ul>
+        </div>
+        <span id="locError" class="field-error" hidden>Please choose your region, province, city and barangay.</span>
+      </div>
+
+      <div class="field">
+        <label for="pc">Postal code</label>
+        <input id="pc" name="PostalCode" maxlength="10" inputmode="numeric" required autocomplete="postal-code">
+      </div>
+      <div class="field">
+        <label for="st">Street name / House / unit number </label>
+        <input id="st" name="Street" maxlength="255" required autocomplete="address-line1">
+      </div>
+
+      <div class="field">
+        <label for="at">Address type</label>
+        <select id="at" name="AddressType">
+          <option>Home</option>
+          <option>Work</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" name="IsDefault" style="width:auto;flex:none;margin:0"> Make this my default address</label>
+      </div>
+      <button class="btn btn-block" type="submit" id="saveBtn">Save address</button>
+      <button class="btn btn-block btn-outline" type="button" id="cancelEdit" hidden>Cancel</button>
+      <div id="msg" role="status"></div>
+    </form>
+
+    <p class="muted" style="margin-top:16px"><a href="profile.html">Back to my profile</a></p>
+  </div>
+
+</main>
+
+<!-- ===== KAMERAPH FOOTER (copy as is, do not edit) ===== -->
+<footer class="kph-footer">
+  <div class="kph-footer-inner">
+    <div class="kph-logo">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </div>
+    <p class="kph-footer-note only-mobile">Your one-stop shop for professional gear.</p>
+    <p class="kph-footer-copy">© 2026 KameraPH. All rights reserved.</p>
+  </div>
+</footer>
+<!-- ===== END FOOTER ===== -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/kph-ui.js"></script>
+<script src="js/demo.js"></script>
+<script>
+
+  const USE_API = true;
+
+  // biggest area to the smallest: Region > Province > City > Barangay.
+  const PLACES = {
+    "Region III (Central Luzon)": {
+      "Zambales": {
+        "Olongapo City": ["East Bajac-Bajac", "Gordon Heights", "West Bajac-Bajac", "Barretto", "Kalaklan", "New Cabalan"],
+        "Subic": ["Calapacuan", "Wawandue", "Cawag"]
+      },
+      "Bulacan": {
+        "Malolos City": ["Bulihan", "Mojon", "Sumapang Matanda"],
+        "Meycauayan City": ["Calvario", "Camalig", "Saluysoy"]
+      },
+      "Pampanga": {
+        "Angeles City": ["Balibago", "Pulung Maragul", "Anunas"],
+        "City of San Fernando": ["Del Pilar", "Dolores", "Sindalan"]
+      }
+    },
+    "National Capital Region (NCR)": {
+      "Metro Manila": {
+        "Quezon City": ["Batasan Hills", "Commonwealth", "Loyola Heights"],
+        "Makati City": ["Bel-Air", "Poblacion", "San Lorenzo"],
+        "City of Manila": ["Ermita", "Malate", "Sampaloc"]
+      }
+    },
+    "Region IV-A (CALABARZON)": {
+      "Cavite": { "Bacoor City": ["Molino III", "Talaba", "Zapote"] },
+      "Laguna": { "Santa Rosa City": ["Balibago", "Dila", "Tagapo"] },
+      "Batangas": { "Batangas City": ["Poblacion", "Alangilan", "Kumintang Ibaba"] }
+    },
+    "Region VII (Central Visayas)": {
+      "Cebu": {
+        "Cebu City": ["Lahug", "Mabolo", "Guadalupe"],
+        "Mandaue City": ["Subangdaku", "Banilad", "Centro"]
+      }
+    },
+    "Region XI (Davao Region)": {
+      "Davao del Sur": { "Davao City": ["Poblacion District", "Buhangin", "Talomo"] }
+    }
+  };
+  const LEVELS = ["Region", "Province", "City", "Barangay"];
+  const ARROW = " › ";
+
+  // ---------- Location picker ----------
+  let sel = [];      // [region, province, city, barangay]
+  let level = 0;     // which step is open (0 = Region ... 3 = Barangay)
+
+  const locBtn = document.getElementById("loc");
+  const locText = document.getElementById("locText");
+  const locPanel = document.getElementById("locPanel");
+  const locTabs = document.getElementById("locTabs");
+  const locOptions = document.getElementById("locOptions");
+  const locError = document.getElementById("locError");
+
+  function optionsForLevel() {
+    if (level === 0) return Object.keys(PLACES);
+    if (level === 1) return Object.keys(PLACES[sel[0]]);
+    if (level === 2) return Object.keys(PLACES[sel[0]][sel[1]]);
+    return PLACES[sel[0]][sel[1]][sel[2]];
+  }
+
+  function drawPicker() {
+    // Region › Province › City › Barangay 
+    locTabs.innerHTML = LEVELS.map((name, i) => {
+      const label = sel[i] || name;
+      const dis = i > sel.length ? " disabled" : "";
+      const act = i === level ? " active" : "";
+      return (i ? '<span class="sep" aria-hidden="true">›</span>' : "") +
+        '<button type="button" class="loc-tab' + act + '" data-level="' + i + '"' + dis + ">" + escapeHtml(label) + "</button>";
+    }).join("");
+
+    locOptions.innerHTML = optionsForLevel().map(o =>
+      '<li><button type="button" class="loc-option" data-value="' + escapeHtml(o) + '">' +
+      "<span>" + escapeHtml(o) + "</span>" +
+      (level < 3 ? '<span class="arrow" aria-hidden="true">›</span>' : "") +
+      "</button></li>").join("");
+  }
+
+  function drawValue() {
+    if (sel.length === 4) {
+      locText.textContent = sel.join(ARROW);
+      locText.className = "";
+    } else {
+      locText.textContent = "Region › Province › City › Barangay";
+      locText.className = "loc-placeholder";
+    }
+  }
+
+  function openPicker() {
+    level = Math.min(sel.length, 3);
+    drawPicker();
+    locPanel.hidden = false;
+    locBtn.setAttribute("aria-expanded", "true");
+  }
+  function closePicker() {
+    locPanel.hidden = true;
+    locBtn.setAttribute("aria-expanded", "false");
+  }
+
+  locBtn.addEventListener("click", () => locPanel.hidden ? openPicker() : closePicker());
+
+  locTabs.addEventListener("click", (e) => {
+    const b = e.target.closest(".loc-tab");
+    if (!b || b.disabled) return;
+    level = Number(b.dataset.level);
+    drawPicker();
+  });
+
+  locOptions.addEventListener("click", (e) => {
+    const b = e.target.closest(".loc-option");
+    if (!b) return;
+    sel = sel.slice(0, level);            // choosing again clears the smaller areas
+    sel[level] = b.dataset.value;
+    locError.hidden = true;
+    if (level < 3) {
+      level++;
+      drawPicker();
+    } else {
+      drawValue();
+      closePicker();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !locPanel.hidden) { closePicker(); locBtn.focus(); } });
+  document.addEventListener("click", (e) => {
+
+    const inside = e.composedPath().some(el => el.id === "loc" || el.id === "locPanel");
+    if (!locPanel.hidden && !inside) closePicker();
+  });
+
+  function resetPicker() { sel = []; level = 0; drawValue(); closePicker(); }
+
+  // ---------- Address list ----------
+  let addresses = KPHDemo.addresses();
+
+  // the account's own name and phone number
+  function prefill() {
+    const me = KPHDemo.currentUser();
+    document.getElementById("fullname").value = [me.FirstName, me.MiddleName, me.LastName].filter(Boolean).join(" ");
+    document.getElementById("ph").value = me.PhoneNumber || "";
+  }
+
+  function render() {
+    const status = document.getElementById("status");
+    const list = document.getElementById("list");
+    if (addresses.length === 0) {
+      status.textContent = "No saved addresses yet. Add one below.";
+      list.innerHTML = "";
+      return;
+    }
+    status.textContent = "";
+    list.innerHTML = addresses.map(a => {
+      const line1 = [a.HouseUnitNumber, a.Street].filter(Boolean).join(", ");
+      const line2 = [a.Barangay, a.City, a.Province, a.PostalCode].filter(Boolean).join(", ");
+      return `
+        <article class="card">
+          <h3>${escapeHtml(a.RecipientFullName)}</h3>
+          <p>${escapeHtml(line1)}<br>${escapeHtml(line2)}<br>${escapeHtml(a.Region)}</p>
+          <p class="muted">${escapeHtml(a.PhoneNumber)}</p>
+          <span class="badge badge-orange">${escapeHtml(a.AddressType)}</span>
+          ${a.IsDefault ? '<span class="badge badge-ok">Default</span>' : ""}
+          <div class="row" style="margin-top:12px" data-actions="${escapeHtml(a.AddressID)}">
+            <button class="btn btn-sm btn-outline" type="button" data-edit="${escapeHtml(a.AddressID)}">Edit</button>
+            <button class="btn btn-sm btn-outline" type="button" data-ask="${escapeHtml(a.AddressID)}" style="color:var(--bad)">Delete</button>
+          </div>
+        </article>`;
+    }).join("");
+  }
+
+  // ---------- Edit a saved address ----------
+  let editingId = null;   // the AddressID being edited, or null when adding a new one
+  const form = document.getElementById("form");
+
+  function startEdit(id) {
+    const a = addresses.find(x => String(x.AddressID) === String(id));
+    if (!a) return;
+    editingId = a.AddressID;
+    form.RecipientFullName.value = a.RecipientFullName || "";
+    form.PhoneNumber.value = a.PhoneNumber || "";
+    form.PostalCode.value = a.PostalCode || "";
+    form.Street.value = [a.HouseUnitNumber, a.Street].filter(Boolean).join(", ");
+    form.AddressType.value = a.AddressType || "Home";
+    form.IsDefault.checked = !!Number(a.IsDefault);
+    sel = [a.Region, a.Province, a.City, a.Barangay].filter(Boolean);
+    drawValue();
+    closePicker();
+    locError.hidden = true;
+    document.getElementById("formTitle").textContent = "Edit address";
+    document.getElementById("saveBtn").textContent = "Save changes";
+    document.getElementById("cancelEdit").hidden = false;
+    document.getElementById("msg").className = ""; document.getElementById("msg").textContent = "";
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function stopEdit() {
+    editingId = null;
+    form.reset();
+    resetPicker();
+    prefill();
+    document.getElementById("formTitle").textContent = "Add a new address";
+    document.getElementById("saveBtn").textContent = "Save address";
+    document.getElementById("cancelEdit").hidden = true;
+  }
+
+  //the first click asks "Are you sure?", the second one deletes
+  async function deleteAddress(id) {
+    const msg = document.getElementById("msg");
+    try {
+      if (!USE_API) {
+        const wasDefault = addresses.some(a => String(a.AddressID) === String(id) && Number(a.IsDefault));
+        addresses = addresses.filter(a => String(a.AddressID) !== String(id));
+        if (wasDefault && addresses.length) addresses[0].IsDefault = 1;   // always keep one default
+        KPHDemo.saveAddresses(addresses);
+        render();
+      } else {
+
+        await apiSend("DELETE", "/addresses.php?id=" + encodeURIComponent(id));
+        load();
+      }
+      if (editingId !== null && String(editingId) === String(id)) stopEdit();
+      msg.className = "alert alert-ok";
+      msg.textContent = "Address deleted.";
+    } catch (err) {
+      msg.className = "alert alert-error";
+      msg.textContent = err.message;
+    }
+  }
+
+  document.getElementById("list").addEventListener("click", (e) => {
+    const edit = e.target.closest("[data-edit]");
+    if (edit) { startEdit(edit.dataset.edit); return; }
+
+    const ask = e.target.closest("[data-ask]");
+    if (ask) {
+      const id = ask.dataset.ask;
+      ask.closest("[data-actions]").innerHTML =
+        '<span class="muted">Delete this address?</span> ' +
+        '<button class="btn btn-sm" type="button" data-del="' + escapeHtml(id) + '" style="background:var(--bad)">Yes, delete</button> ' +
+        '<button class="btn btn-sm btn-outline" type="button" data-keep>Keep</button>';
+      return;
+    }
+    const del = e.target.closest("[data-del]");
+    if (del) { deleteAddress(del.dataset.del); return; }
+    if (e.target.closest("[data-keep]")) render();
+  });
+  document.getElementById("cancelEdit").addEventListener("click", stopEdit);
+
+  async function load() {
+    const status = document.getElementById("status");
+    try {
+      if (USE_API) {
+
+        addresses = await apiGet("/addresses.php");
+      }
+      render();
+    } catch (err) {
+      status.className = "alert alert-error";
+      status.textContent = err.message;
+    }
+  }
+
+  document.getElementById("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById("msg");
+    msg.className = ""; msg.textContent = "";
+
+    if (!e.target.checkValidity()) { e.target.reportValidity(); return; }
+    if (sel.length < 4) {
+      locError.hidden = false;
+      openPicker();
+      locBtn.focus();
+      return;
+    }
+
+    const body = Object.fromEntries(new FormData(e.target));
+    body.IsDefault = e.target.IsDefault.checked ? 1 : 0;
+    body.Region = sel[0]; body.Province = sel[1]; body.City = sel[2]; body.Barangay = sel[3];
+
+    try {
+      if (!USE_API) {
+        if (body.IsDefault) addresses.forEach(a => a.IsDefault = 0);
+        if (editingId !== null) {
+          // Editing: replace the old address with the new details
+          body.AddressID = editingId;
+          addresses = addresses.map(a => String(a.AddressID) === String(editingId) ? body : a);
+        } else {
+          body.AddressID = addresses.reduce((m, a) => Math.max(m, Number(a.AddressID) || 0), 0) + 1;
+          addresses.push(body);
+        }
+        KPHDemo.saveAddresses(addresses);
+        render();
+        const wasEditing = editingId !== null;
+        stopEdit();
+        msg.className = "alert alert-ok";
+        msg.textContent = wasEditing ? "Address updated." : "Address saved.";
+        return;
+      }
+      
+      if (editingId !== null) {
+        await apiSend("PUT", "/addresses.php?id=" + encodeURIComponent(editingId), body);
+        msg.textContent = "Address updated.";
+      } else {
+        const result = await apiSend("POST", "/addresses.php", body);
+        msg.textContent = "Address saved. Address number " + result.AddressID + ".";
+      }
+      msg.className = "alert alert-ok";
+      stopEdit();
+      load();
+    } catch (err) {
+      msg.className = "alert alert-error";
+      msg.textContent = err.message;
+    }
+  });
+
+  prefill();
+  load();
+  KPHDemo.syncBadges();
+</script>
+</body>
+</html>

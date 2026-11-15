@@ -1,0 +1,17 @@
+[
+  {
+    "RoleID": 1,
+    "RoleName": "Buyer",
+    "Description": "Can browse listings, make purchases, place bids, and submit reviews."
+  },
+  {
+    "RoleID": 2,
+    "RoleName": "Seller",
+    "Description": "Can create listings, manage inventory, and fulfill orders. Granted after KYC approval."
+  },
+  {
+    "RoleID": 3,
+    "RoleName": "Admin",
+    "Description": "Full platform access: approve KYC, resolve disputes, manage users and listings."
+  }
+]

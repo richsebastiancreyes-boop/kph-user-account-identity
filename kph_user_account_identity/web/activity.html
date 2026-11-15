@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Activity history | KameraPH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/kph.css">
+  <link rel="stylesheet" href="css/module.css">
+  <script>try{var t=localStorage.getItem("kph-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <style>
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tabs button { flex: 1; min-width: 0; }
+    .tabs button.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+    .act-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .act-row:last-child { border-bottom: 0; }
+    .act-row .grow { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+    .act-thumb { width: 56px; height: 56px; border-radius: var(--radius-sm); background: var(--soft); flex: none; display: grid; place-items: center; overflow: hidden; color: var(--muted); font-size: 12px; }
+    .act-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .act-row a { color: var(--text); }
+  </style>
+</head>
+<body>
+<!-- ===== KAMERAPH HEADER (copy as is, do not edit) ===== -->
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="kph-topbar">
+  <div class="kph-topbar-inner">
+    <span>Free Shipping on orders over ₱2,000</span>
+    <div class="kph-topbar-mid hide-mobile">
+      <span>100% Authentic Product</span>
+      <span>1 Year Warranty</span>
+      <span>Easy Return</span>
+    </div>
+    <span class="hide-mobile">Need Help? 0999 999 9999</span>
+  </div>
+</div>
+<header class="kph-header">
+  <div class="kph-header-inner">
+    <a class="kph-logo" href="#" aria-label="KameraPH home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </a>
+    <nav class="kph-nav" id="kph-nav" aria-label="Main"></nav>
+    <div class="kph-search" id="kph-search">
+      <form id="kph-search-form" role="search">
+        <input type="search" placeholder="Search cameras, lenses, accessories" aria-label="Search">
+        <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      </form>
+    </div>
+    <div class="kph-icons">
+      <button class="icon-btn only-mobile" id="kph-search-toggle" type="button" aria-label="Open search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="kph-theme-toggle" type="button" aria-label="Switch between light and dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <a class="icon-btn" data-kph-link="account" href="#" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="icon-btn" data-kph-link="wishlist" href="#" aria-label="Wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="dot" hidden></span></a>
+      <a class="icon-btn" data-kph-link="cart" href="#" aria-label="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span class="dot" hidden></span></a>
+    </div>
+  </div>
+</header>
+<!-- ===== END HEADER ===== -->
+
+<main id="main" class="container">
+  <div style="max-width:720px;margin:0 auto" class="stack">
+    <h2 class="section-title">Activity history</h2>
+    <div class="tabs" id="tabs">
+      <button class="btn btn-sm btn-outline active" type="button" data-tab="viewed">Recently viewed</button>
+      <button class="btn btn-sm btn-outline" type="button" data-tab="searches">Searches</button>
+      <button class="btn btn-sm btn-outline" type="button" data-tab="logins">Logins</button>
+    </div>
+    <p id="status" class="status-msg"></p>
+    <section class="card" id="panel"></section>
+    <div id="clearRow"><button class="btn btn-sm btn-outline" type="button" id="clear" style="color:var(--bad)">Clear this history</button></div>
+    <p class="muted"><a href="profile.html">Back to my account</a></p>
+  </div>
+</main>
+
+<!-- ===== KAMERAPH FOOTER (copy as is, do not edit) ===== -->
+<footer class="kph-footer">
+  <div class="kph-footer-inner">
+    <div class="kph-logo">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </div>
+    <p class="kph-footer-note only-mobile">Your one-stop shop for professional gear.</p>
+    <p class="kph-footer-copy">© 2026 KameraPH. All rights reserved.</p>
+  </div>
+</footer>
+<!-- ===== END FOOTER ===== -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/kph-ui.js"></script>
+<script src="js/demo.js"></script>
+<script>
+  // Live API mode enabled
+  const USE_API = true;
+
+  let tab = "viewed";
+  let data = { viewed: [], searches: [], logins: [] };
+
+  function when(iso) {
+    const d = new Date(iso);
+    return isNaN(d) ? "" : d.toLocaleString("en-PH", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+
+  function thumb(p) {
+    return '<div class="act-thumb">' + (p.image ? '<img src="' + escapeHtml(p.image) + '" alt="">' : "Photo") + "</div>";
+  }
+  // A missing photo shows the grey "Photo" box instead of a broken picture
+  document.addEventListener("error", (e) => {
+    if (e.target.tagName === "IMG" && e.target.closest(".act-thumb")) e.target.replaceWith(document.createTextNode("Photo"));
+  }, true);
+
+  const views = {
+    viewed: (list) => list.map(v => `
+      <div class="act-row">
+        ${thumb(v.product)}
+        <div class="grow">
+          <a href="${escapeHtml(KPH.modules.catalog + "/product.html?id=" + encodeURIComponent(v.product.id))}"><strong>${escapeHtml(v.product.name)}</strong></a><br>
+          <span class="muted">${escapeHtml(formatPeso(v.product.price))} · ${escapeHtml(when(v.At))}</span>
+        </div>
+      </div>`).join(""),
+
+    searches: (list) => list.map(s => `
+      <div class="act-row">
+        <div class="grow">
+          <a href="${escapeHtml(KPH.modules[KPH.links.search.module] + "/" + KPH.links.search.page + "?q=" + encodeURIComponent(s.Query))}"><strong>${escapeHtml(s.Query)}</strong></a><br>
+          <span class="muted">${escapeHtml(when(s.At))}</span>
+        </div>
+        <button class="btn btn-sm btn-outline" type="button" data-remove="${escapeHtml(s.Query)}" aria-label="Remove this search">Remove</button>
+      </div>`).join(""),
+
+    logins: (list) => list.map((l, i) => `
+      <div class="act-row">
+        <div class="grow">
+          <strong>${escapeHtml(l.Method || l.Status || "Session")}</strong> ${i === 0 ? '<span class="badge badge-ok">Latest</span>' : ""}<br>
+          <span class="muted">${escapeHtml(l.Browser || l.Device || "Web Browser")} · ${escapeHtml(when(l.At))}</span>
+        </div>
+      </div>`).join("")
+  };
+
+  const empty = {
+    viewed: "No products viewed yet. Tap a product on the home page.",
+    searches: "No searches yet.",
+    logins: "No logins recorded yet."
+  };
+
+  function draw() {
+    document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+    const list = data[tab];
+    const panel = document.getElementById("panel");
+    panel.hidden = list.length === 0;
+    panel.innerHTML = list.length ? views[tab](list) : "";
+    document.getElementById("status").textContent = list.length ? "" : empty[tab];
+    // Login history is a record of security, so it cannot be cleared
+    document.getElementById("clearRow").hidden = list.length === 0 || tab === "logins";
+  }
+
+  async function load() {
+    const status = document.getElementById("status");
+    try {
+      if (!USE_API) {
+        data = { viewed: KPHDemo.viewed(), searches: KPHDemo.searches(), logins: KPHDemo.logins() };
+      } else {
+        const r = await Promise.all(["viewed", "searches", "logins"].map(t => apiGet("/activity.php?type=" + t)));
+        data = {
+          viewed: (r[0] && r[0].length) ? r[0] : KPHDemo.viewed(),
+          searches: (r[1] && r[1].length) ? r[1] : KPHDemo.searches(),
+          logins: r[2] || []
+        };
+      }
+      draw();
+    } catch (err) {
+      status.className = "alert alert-error";
+      status.textContent = err.message;
+    }
+  }
+
+  document.getElementById("tabs").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-tab]");
+    if (b) { tab = b.dataset.tab; draw(); }
+  });
+
+  document.getElementById("clear").addEventListener("click", async () => {
+    try {
+      if (!USE_API) { tab === "viewed" ? KPHDemo.clearViewed() : KPHDemo.clearSearches(); }
+      else { await apiSend("DELETE", "/activity.php?type=" + tab); }
+      await load();
+    } catch (err) { document.getElementById("status").textContent = err.message; }
+  });
+
+  document.getElementById("panel").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-remove]");
+    if (!b) return;
+    try {
+      if (!USE_API) KPHDemo.removeSearch(b.dataset.remove);
+      else await apiSend("DELETE", "/activity.php?type=searches&q=" + encodeURIComponent(b.dataset.remove));
+      await load();
+    } catch (err) { document.getElementById("status").textContent = err.message; }
+  });
+
+  load();
+  KPHDemo.syncBadges();
+</script>
+</body>
+</html>

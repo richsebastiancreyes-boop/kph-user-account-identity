@@ -1,0 +1,24 @@
+[
+  {
+    "AddressID": 1,
+    "UserID": 1,
+    "Label": "Home",
+    "RecipientFirstName": "Juan",
+    "RecipientMiddleName": null,
+    "RecipientLastName": "Dela Cruz",
+    "RecipientFullName": "Juan Dela Cruz",
+    "PhoneNumber": "+639171234567",
+    "HouseUnitNumber": "Unit 4B",
+    "StreetName": "123 Sampaguita St.",
+    "Subdivision": null,
+    "Barangay": "poblacion",
+    "CityMunicipality": "Makati City",
+    "Province": "Metro Manila",
+    "PostalCode": "1210",
+    "AdditionalNotes": "Blue gate, leave with lobby guard",
+    "FullAddress": "Unit 4B, 123 Sampaguita St., Brgy. poblacion, Makati City, Metro Manila, 1210",
+    "IsDefault": true,
+    "CreatedAt": "2026-01-16 09:00:00",
+    "UpdatedAt": null
+  }
+]

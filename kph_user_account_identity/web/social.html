@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Continue with account | KameraPH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/kph.css">
+  <link rel="stylesheet" href="css/module.css">
+  <script>try{var t=localStorage.getItem("kph-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <style>
+    /* Login / Register layout: no header, no footer, one centered box (uses the kit's colors only) */
+    .auth { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 24px 16px; }
+    .auth .kph-logo { justify-content: center; }
+    .auth-card { width: 100%; max-width: 420px; padding: 28px; }
+    .auth-card h1 { font-size: 22px; margin-bottom: 4px; }
+    .auth-sub { color: var(--muted); margin-bottom: 16px; }
+    .auth-switch { text-align: center; margin: 4px 0 0; color: var(--muted); }
+    @media (max-width: 480px) { .auth-card { padding: 20px; } }
+  </style>
+</head>
+<body data-public>
+<main id="main" class="auth">
+  <!-- Logo only (not a link), so nothing from the shop can be opened from here -->
+  <div class="kph-logo" aria-label="KameraPH">
+    <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+    <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+  </div>
+
+  <form id="form" class="card form auth-card">
+    <div>
+      <h1 id="title">Continue</h1>
+      <p class="auth-sub">Tell us who you are and we will open your KameraPH account. No password needed.</p>
+    </div>
+    <div class="field">
+      <label for="fn">First name</label>
+      <input id="fn" name="FirstName" maxlength="100" required autocomplete="given-name">
+    </div>
+    <div class="field">
+      <label for="ln">Last name</label>
+      <input id="ln" name="LastName" maxlength="100" required autocomplete="family-name">
+    </div>
+    <div class="field">
+      <label for="em">Email</label>
+      <input id="em" name="Email" type="email" maxlength="191" required autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="ph">Phone number</label>
+      <input id="ph" name="PhoneNumber" type="tel" maxlength="20" required autocomplete="tel">
+      <span class="field-hint">Only used the first time, to create your account.</span>
+    </div>
+    <button class="btn btn-block" type="submit" id="go">Continue</button>
+    <div id="msg" role="status"></div>
+    <p class="auth-switch"><a href="login.html">Back to log in</a></p>
+  </form>
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/demo.js"></script>
+<script>
+  // Live API mode enabled
+  const USE_API = true;
+
+  const p = new URLSearchParams(location.search).get("provider");
+  const provider = { google: "Google", facebook: "Facebook" }[String(p || "").toLowerCase()] || p;
+  if (!provider) { location.replace("login.html"); }
+  else {
+    document.getElementById("title").textContent = "Continue with " + provider;
+    document.getElementById("go").textContent = "Continue with " + provider;
+  }
+
+  document.getElementById("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById("msg");
+    const body = Object.fromEntries(new FormData(e.target));
+
+    if (!USE_API) {
+      const r = KPHDemo.socialLogin(provider, body);
+      if (!r.ok) { msg.className = "alert alert-error"; msg.textContent = r.error; return; }
+      location.href = "home.html";
+      return;
+    }
+
+    try {
+      const res = await apiSend("POST", "/social.php", Object.assign({ Provider: provider }, body));
+      if (window.KPHAuth) KPHAuth.saveSession(res.Token, res.User);
+      location.href = "home.html";
+    } catch (err) {
+      msg.className = "alert alert-error";
+      msg.textContent = err.message;
+    }
+  });
+</script>
+</body>
+</html>

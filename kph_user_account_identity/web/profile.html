@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Account | KameraPH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/kph.css">
+  <link rel="stylesheet" href="css/module.css">
+  <!-- keeps the light/dark choice without a flash -->
+  <script>try{var t=localStorage.getItem("kph-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <style>
+    /* the kit's .form and .card styles would otherwise show elements that are marked hidden */
+    [hidden] { display: none !important; }
+    /* Account pages (kit colors only) */
+    .avatar { width: 72px; height: 72px; flex: none; border-radius: 50%; overflow: hidden; display: grid; place-items: center;
+      background: var(--soft); color: var(--orange-text); font-size: 28px; font-weight: 700; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .account-head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .account-head .who { flex: 1; min-width: 160px; }
+    .account-head h2 { margin: 0 0 2px; }
+    .account-head p { margin: 0 0 6px; }
+    .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+    .tiles a { padding: 12px 4px; border-radius: var(--radius-sm); color: var(--text); font-size: 13px; }
+    .tiles a:hover { background: var(--soft); text-decoration: none; }
+    .menu a { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 4px;
+      border-bottom: 1px solid var(--border); color: var(--text); }
+    .menu a:last-child { border-bottom: 0; }
+    .menu a:hover { text-decoration: none; color: var(--orange-text); }
+    .menu .chev { color: var(--muted); }
+    .menu .danger { color: var(--bad); }
+    .card-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .card-title h3 { margin: 0; }
+    .pic-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+<!-- ===== KAMERAPH HEADER (copy as is, do not edit) ===== -->
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="kph-topbar">
+  <div class="kph-topbar-inner">
+    <span>Free Shipping on orders over ₱2,000</span>
+    <div class="kph-topbar-mid hide-mobile">
+      <span>100% Authentic Product</span>
+      <span>1 Year Warranty</span>
+      <span>Easy Return</span>
+    </div>
+    <span class="hide-mobile">Need Help? 0999 999 9999</span>
+  </div>
+</div>
+<header class="kph-header">
+  <div class="kph-header-inner">
+    <a class="kph-logo" href="#" aria-label="KameraPH home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </a>
+    <nav class="kph-nav" id="kph-nav" aria-label="Main"></nav>
+    <div class="kph-search" id="kph-search">
+      <form id="kph-search-form" role="search">
+        <input type="search" placeholder="Search cameras, lenses, accessories" aria-label="Search">
+        <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      </form>
+    </div>
+    <div class="kph-icons">
+      <button class="icon-btn only-mobile" id="kph-search-toggle" type="button" aria-label="Open search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="kph-theme-toggle" type="button" aria-label="Switch between light and dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <a class="icon-btn" data-kph-link="account" href="#" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="icon-btn" data-kph-link="wishlist" href="#" aria-label="Wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="dot" hidden></span></a>
+      <a class="icon-btn" data-kph-link="cart" href="#" aria-label="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span class="dot" hidden></span></a>
+    </div>
+  </div>
+</header>
+<!-- ===== END HEADER ===== -->
+
+<main id="main" class="container">
+  <div class="stack" style="max-width:720px;margin:0 auto">
+    <p id="status" class="status-msg">Loading...</p>
+
+    <!-- Top card: picture and username only. Personal details live in Account settings. -->
+    <section id="head" class="card account-head" hidden></section>
+
+    <!-- Shortcuts to the orders module (built from config.js) -->
+    <section class="card">
+      <div class="card-title"><h3>My Purchases</h3><a id="allOrders" href="#">View all</a></div>
+      <div class="tiles" id="tiles">
+        <a href="#" data-status="to-pay">To Pay</a>
+        <a href="#" data-status="to-ship">To Ship</a>
+        <a href="#" data-status="to-receive">To Receive</a>
+        <a href="#" data-status="to-review">To Review</a>
+      </div>
+    </section>
+
+    <!-- Menu -->
+    <section class="card menu">
+      <div id="roleRows" style="display:contents"></div>
+      <a href="activity.html"><span>Activity history</span><span class="chev" aria-hidden="true">›</span></a>
+      <a href="addresses.html"><span>My addresses</span><span class="chev" aria-hidden="true">›</span></a>
+      <a href="kyc.html"><span>Verify my ID</span><span class="chev" aria-hidden="true">›</span></a>
+      <a id="helpLink" href="#"><span>Help centre</span><span class="chev" aria-hidden="true">›</span></a>
+      <a class="danger" href="login.html" data-logout><span>Log out</span></a>
+      <a class="danger" href="delete-account.html"><span>Delete account</span></a>
+    </section>
+  </div>
+</main>
+
+<!-- ===== KAMERAPH FOOTER (copy as is, do not edit) ===== -->
+<footer class="kph-footer">
+  <div class="kph-footer-inner">
+    <div class="kph-logo">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </div>
+    <p class="kph-footer-note only-mobile">Your one-stop shop for professional gear.</p>
+    <p class="kph-footer-copy">© 2026 KameraPH. All rights reserved.</p>
+  </div>
+</footer>
+<!-- ===== END FOOTER ===== -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/kph-ui.js"></script>
+<script src="js/demo.js"></script>
+<script>
+  // Live API mode enabled
+  const USE_API = true;
+
+  // Demo only: the account saved in this browser (see js/demo.js)
+  function demoUser() { return KPHDemo.currentUser(); }
+
+  function kycBadge(s) {
+    const map = { Verified: "badge-ok", Pending: "badge-warn", Rejected: "badge-bad" };
+    return '<span class="badge ' + (map[s] || "badge-warn") + '">' + escapeHtml(s) + "</span>";
+  }
+
+  function showHead(u) {
+    const letter = (u.Username || u.FirstName || "?").charAt(0).toUpperCase();
+    const pic = u.ProfilePictureURL
+      ? '<img src="' + escapeHtml(u.ProfilePictureURL) + '" alt="">'
+      : escapeHtml(letter);
+    const since = new Date(String(u.DateJoined).replace(" ", "T"));
+    const sinceText = isNaN(since) ? "" : "Member since " + since.toLocaleDateString("en-PH", { month: "long", year: "numeric" });
+    const head = document.getElementById("head");
+    head.innerHTML = `
+      <div class="avatar">${pic}</div>
+      <div class="who">
+        <h2>@${escapeHtml(u.Username)}</h2>
+        ${u.Bio ? '<p style="overflow-wrap:anywhere">' + escapeHtml(u.Bio) + "</p>" : ""}
+        <p class="muted">${escapeHtml(sinceText)}</p>
+        <span class="badge badge-ok">${escapeHtml(u.Status)}</span> ${kycBadge(u.VerificationStatus)} <span class="badge">${escapeHtml(u.Role || "Buyer")}</span>
+      </div>
+      <a class="btn btn-sm btn-outline" href="profile-edit.html">Edit profile</a>`;
+    head.hidden = false;
+  }
+
+  // Links to other modules are built from config.js (never typed here)
+  const orders = KPH.modules.orders;
+  document.getElementById("allOrders").href = orders + "/orders.html";
+  document.querySelectorAll("#tiles a").forEach(a => a.href = orders + "/orders.html?status=" + a.dataset.status);
+  document.getElementById("helpLink").href = KPH.modules.support + "/contact.html";
+
+  // Extra menu rows that depend on the role. The pages they open belong to other modules (names are examples).
+  function showRole(u) {
+    const role = u.Role || "Buyer";
+    const rows = {
+      Buyer:  ["Become a seller", KPH.modules.sellers + "/become-seller.html"],
+      Seller: ["Seller Centre", KPH.modules.sellers + "/dashboard.html"],
+      Admin:  ["Admin Dashboard", KPH.modules.admin + "/dashboard.html"]
+    };
+    const r = rows[role];
+    document.getElementById("roleRows").innerHTML = r
+      ? '<a href="' + escapeHtml(r[1]) + '"><span>' + escapeHtml(r[0]) + '</span><span class="chev" aria-hidden="true">›</span></a>'
+      : "";
+  }
+
+  async function load() {
+    const status = document.getElementById("status");
+    try {
+      let user;
+      if (!USE_API) {
+        user = demoUser();
+      } else {
+        const id = new URLSearchParams(location.search).get("id") || (window.KPHAuth ? KPHAuth.getUserId() : "");
+        user = await apiGet("/users.php" + (id ? "?id=" + encodeURIComponent(id) : ""));
+        if (window.KPHAuth) KPHAuth.saveSession(null, user);
+      }
+      status.textContent = "";
+      showHead(user);
+      showRole(user);
+    } catch (err) {
+      status.className = "alert alert-error";
+      status.textContent = err.message;
+    }
+  }
+  load();
+  KPHDemo.syncBadges();
+</script>
+</body>
+</html>

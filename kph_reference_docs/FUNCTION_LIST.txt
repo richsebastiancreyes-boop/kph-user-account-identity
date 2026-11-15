@@ -1,0 +1,123 @@
+KameraPH | Module 1: User Account and Identity
+BACKEND: FUNCTION LIST
+
+HOW TO USE THIS FOLDER
+  Folders: config/ (settings + database connection) and classes/ (backend).
+  Put both inside htdocs\kph_user_account_identity\. The classes load
+  config/Database.php, which reads config/config.php.
+  The database is the leader's SQL file: module_01_user_account_and_identity.sql
+  (8 tables). Set your own MySQL login and your own encryption_key in
+  config/config.php (the key shown is a placeholder).
+
+RULES THE WHOLE BACKEND FOLLOWS
+  - One class per main table (8), plus 4 helper classes.
+  - Classes return data or throw exceptions. They never echo, never die,
+    never read $_GET or $_POST.
+  - Wrong input        -> InvalidArgumentException  (API: 400)
+  - Wrong login        -> AuthenticationException   (API: 401)
+  - Not allowed        -> ForbiddenException        (API: 403)
+  - Not found          -> OutOfBoundsException      (API: 404)
+  - All SQL uses PDO prepared statements.
+
+OUTSIDE IDs STORED (plain numbers, no foreign key, never read from another module)
+  kyc_verification.ReviewedByAdminID -> AdminID of Module 10
+
+
+1. config/Database.php
+
+  Database::getConnection()   Returns the one shared PDO connection.
+  Database::getConfig()       Returns the settings array from config.php.
+
+2. MAIN CLASSES (one per table)
+
+
+User  (table: user)
+  register(data) -> UserID
+      Needs FirstName, LastName, Email, PhoneNumber, Password.
+      Optional: MiddleName, Username, Bio, DateOfBirth.
+      Rules: valid email and PH mobile; strong password (8+, letter+number);
+      email and phone not used already. Creates the profile and the buyer role.
+  login(identifier, password) -> user
+      Identifier is email or phone. Same error message for wrong email or
+      wrong password. Suspended users cannot log in.
+  socialLogin(data) -> user
+      Google/Facebook. Linked account -> that user. Same email as an existing
+      user -> linked only if that email is verified. Otherwise a new user.
+  getById(userId) -> user or null        (no password, no token)
+  getAll(filters) -> list                (status, search, limit, offset; admin)
+  toPublic(user) -> short user           (UserID, names, DateJoined only)
+  update(userId, data) -> user           (only the fields sent; a new email or
+                                          phone must be verified again)
+  changePassword(userId, current, new)   (current not needed for social users)
+  sendToken(identifier, purpose) -> code or null
+      Purpose: verify_email, verify_phone, reset_password. Returns null for
+      unknown/suspended/already-verified, so nobody can find out which emails exist.
+  verifyContact(identifier, purpose, token) -> user   (marks verified)
+  resetPassword(identifier, token, newPassword)       (new password is checked
+                                          first, then the token is used)
+  suspend(userId, reason, actingUserId) -> user
+      Reason required. An admin cannot suspend themselves.
+  reactivate(userId) -> user
+
+UserProfile  (table: user_profile)
+  validate(data, isNew, userId, baseForUsername) -> clean data
+  create(userId, data, baseForUsername) -> ProfileID
+  getByUserId(userId) -> profile or null
+  update(userId, data) -> profile
+  toPublic(profile) -> profile without DateOfBirth
+      Username unique, 3 to 30 letters, numbers, dots or underscores.
+
+UserAddress  (table: user_address)
+  create(userId, data) -> AddressID
+      First address is the default. Only one default. Max 10 per user.
+  getById(addressId) -> address or null
+  getByUser(userId) -> list (default first)
+  update(addressId, userId, data) -> address   (must belong to the user)
+  delete(addressId, userId)                    (if it was the default, the
+                                                newest remaining one becomes default)
+
+Role  (table: role)
+  ensureDefaults()          Adds buyer, seller, admin if missing.
+  getAll() / getById(roleId) / getByName(roleName)
+
+UserRole  (table: user_role)
+  assign(userId, roleId) -> UserRoleID
+  assignByName(userId, roleName) -> UserRoleID
+  assignFromData(data) -> UserRoleID     (reads UserID + RoleName or RoleID)
+  getRolesByUser(userId) -> list
+  hasRole(userId, roleName) -> true/false
+  remove(userId, roleId, actingUserId)
+      An admin cannot remove their own admin role. No duplicate roles.
+
+AuthIdentity  (table: auth_identity)
+  findUserId(provider, providerUserId) -> UserID or null
+  link(userId, provider, providerUserId) -> AuthIdentityID
+  getByUser(userId) -> list (provider's own ID is not shown)
+      Providers: google, facebook.
+
+VerificationToken  (table: verification_token)
+  create(userId, purpose) -> code
+      6 digits for email/phone, long random token for password reset.
+      Saved only as an HMAC hash with an expiry time. Older unused tokens stop working.
+  verify(userId, purpose, token) -> true
+      Throws if wrong, expired or already used. A token works once.
+
+KycVerification  (table: kyc_verification)
+  submit(userId, data) -> KYCID
+      Status starts as Pending. ID number is encrypted (AES-256-GCM).
+      Not allowed while one is Pending or after Approved.
+  getById(kycId) / getLatestByUser(userId) -> request or null
+  getAll(status, limit, offset) -> list   (oldest first; admin)
+  approve(kycId, reviewedByAdminId) -> request     (Pending only)
+  reject(kycId, reviewedByAdminId, reason) -> request   (Pending only; reason required)
+  toStatusView(userId, kyc) -> status only, never the ID number or photos
+
+
+3. HELPER CLASSES
+
+  Validator   Reusable checks: text, name, email, phone, id, password,
+              oneOf, pastDate, fileUrl.
+  Crypto      encrypt() / decrypt() with AES-256-GCM; hashToken() with HMAC-SHA256.
+  Exceptions  AuthenticationException, ForbiddenException.
+  ModuleApi   Calls other modules' APIs with the X-Module-Key header.
+              OFF by default (call_other_modules = false).

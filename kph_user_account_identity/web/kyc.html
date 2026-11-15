@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verify my ID | KameraPH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/kph.css">
+  <link rel="stylesheet" href="css/module.css">
+  <!-- keeps the light/dark choice without a flash -->
+  <script>try{var t=localStorage.getItem("kph-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <style>
+    /* the kit's .form and .card styles would otherwise show elements that are marked hidden */
+    [hidden] { display: none !important; }
+    .preview { max-width: 100%; max-height: 220px; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+<!-- ===== KAMERAPH HEADER (copy as is, do not edit) ===== -->
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="kph-topbar">
+  <div class="kph-topbar-inner">
+    <span>Free Shipping on orders over ₱2,000</span>
+    <div class="kph-topbar-mid hide-mobile">
+      <span>100% Authentic Product</span>
+      <span>1 Year Warranty</span>
+      <span>Easy Return</span>
+    </div>
+    <span class="hide-mobile">Need Help? 0999 999 9999</span>
+  </div>
+</div>
+<header class="kph-header">
+  <div class="kph-header-inner">
+    <a class="kph-logo" href="#" aria-label="KameraPH home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </a>
+    <nav class="kph-nav" id="kph-nav" aria-label="Main"></nav>
+    <div class="kph-search" id="kph-search">
+      <form id="kph-search-form" role="search">
+        <input type="search" placeholder="Search cameras, lenses, accessories" aria-label="Search">
+        <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      </form>
+    </div>
+    <div class="kph-icons">
+      <button class="icon-btn only-mobile" id="kph-search-toggle" type="button" aria-label="Open search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="kph-theme-toggle" type="button" aria-label="Switch between light and dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <a class="icon-btn" data-kph-link="account" href="#" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="icon-btn" data-kph-link="wishlist" href="#" aria-label="Wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="dot" hidden></span></a>
+      <a class="icon-btn" data-kph-link="cart" href="#" aria-label="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span class="dot" hidden></span></a>
+    </div>
+  </div>
+</header>
+<!-- ===== END HEADER ===== -->
+
+<main id="main" class="container">
+  <div class="stack" style="max-width:720px;margin:0 auto">
+    <h2 class="section-title">Verify my ID</h2>
+
+    <!-- Status -->
+    <section id="statusCard" class="card"></section>
+
+    <!-- Form (only when the person is not verified yet, or was rejected) -->
+    <form id="form" class="card form" novalidate hidden>
+      <div class="field">
+        <label for="idtype">ID type</label>
+        <select id="idtype" name="IDType" required>
+          <option value="">Choose an ID</option>
+          <option>Philippine National ID (PhilSys)</option>
+          <option>Driver's License</option>
+          <option>Passport</option>
+          <option>UMID</option>
+          <option>PRC ID</option>
+          <option>Postal ID</option>
+          <option>Voter's ID</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="idnum">ID number</label>
+        <input id="idnum" name="IDNumber" maxlength="255" required autocomplete="off">
+        <span class="field-hint">Your ID number is stored encrypted.</span>
+      </div>
+      <div class="field">
+        <label for="idimg">Photo of your ID</label>
+        <input id="idimg" name="IDImage" type="file" accept="image/*" required>
+        <img id="idPreview" class="preview" alt="Preview of your ID" hidden>
+      </div>
+      <div class="field">
+        <label for="selfie">Selfie holding your ID</label>
+        <input id="selfie" name="SelfieImage" type="file" accept="image/*" required>
+        <img id="selfiePreview" class="preview" alt="Preview of your selfie" hidden>
+      </div>
+      <button class="btn btn-block" type="submit">Submit for verification</button>
+      <div id="msg" role="status"></div>
+    </form>
+
+    <p class="muted"><a href="profile.html">Back to my account</a></p>
+  </div>
+</main>
+
+<!-- ===== KAMERAPH FOOTER (copy as is, do not edit) ===== -->
+<footer class="kph-footer">
+  <div class="kph-footer-inner">
+    <div class="kph-logo">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 13h24l-2 22H10L8 13z" fill="#FE6903"/><path d="M14 13v-2a6 6 0 0 1 12 0v2" fill="none" stroke="#FE6903" stroke-width="3"/><circle cx="20" cy="24" r="6" fill="#fff"/><circle cx="20" cy="24" r="3" fill="#272A33"/></svg>
+      <span class="kph-logo-text"><span class="kph-wordmark">Kamera<b>PH</b></span><small>Capture. Create. Inspire</small></span>
+    </div>
+    <p class="kph-footer-note only-mobile">Your one-stop shop for professional gear.</p>
+    <p class="kph-footer-copy">© 2026 KameraPH. All rights reserved.</p>
+  </div>
+</footer>
+<!-- ===== END FOOTER ===== -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/kph-ui.js"></script>
+<script src="js/demo.js"></script>
+<script>
+//for browser remember
+  const USE_API = true;
+
+  const form = document.getElementById("form");
+  const card = document.getElementById("statusCard");
+
+  // Statuses used here: Not verified, Pending, Verified, Rejected
+  async function render() {
+    let u = Object.assign({ VerificationStatus: "Not verified" }, KPHDemo.user());
+    if (USE_API) {
+      try {
+        const k = await apiGet("/kyc.php");
+        const mapStatus = { Approved: "Verified", Pending: "Pending", Rejected: "Rejected", Unverified: "Not verified" };
+        u = {
+          VerificationStatus: mapStatus[k.KYCStatus] || "Not verified",
+          KYCSubmittedAt: k.SubmittedAt,
+          RejectionReason: k.RejectionReason
+        };
+      } catch (e) {}
+    }
+    const s = u.VerificationStatus;
+    let badge = '<span class="badge badge-warn">' + escapeHtml(s) + "</span>";
+    let text = "Verify your ID to buy and sell with confidence.";
+
+    if (s === "Pending") {
+      const when = u.KYCSubmittedAt ? new Date(u.KYCSubmittedAt).toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short" }) : "";
+      text = "We received your documents and they are being reviewed." + (when ? " Submitted on " + when + "." : "");
+    } else if (s === "Verified") {
+      badge = '<span class="badge badge-ok">Verified</span>';
+      text = "Your ID is verified. Thank you!";
+    } else if (s === "Rejected") {
+      badge = '<span class="badge badge-bad">Rejected</span>';
+      text = "Your verification was not approved." + (u.RejectionReason ? " Reason: " + u.RejectionReason : "") + " You can submit again below.";
+    }
+
+    card.innerHTML = "<h3>Status " + badge + "</h3><p class=\"muted\" style=\"margin:0\">" + escapeHtml(text) + "</p>";
+    form.hidden = !(s === "Not verified" || s === "Rejected");
+  }
+
+  // Picture previews 
+  function preview(inputId, imgId) {
+    document.getElementById(inputId).addEventListener("change", (e) => {
+      const img = document.getElementById(imgId);
+      const file = e.target.files[0];
+      img.hidden = !file;
+      if (file) img.src = URL.createObjectURL(file);
+    });
+  }
+  preview("idimg", "idPreview");
+  preview("selfie", "selfiePreview");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById("msg");
+    msg.className = ""; msg.textContent = "";
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+
+    try {
+      if (!USE_API) {
+        //only the status is remembered. Nothing is uploaded.
+        KPHDemo.saveUser({ VerificationStatus: "Pending", IDType: form.IDType.value, KYCSubmittedAt: new Date().toISOString() });
+        form.reset();
+        document.getElementById("idPreview").hidden = true;
+        document.getElementById("selfiePreview").hidden = true;
+        render();
+        return;
+      }
+      
+      await apiSend("POST", "/kyc.php", { IDType: form.IDType.value, IDNumber: form.IDNumber.value });
+      render();
+    } catch (err) {
+      msg.className = "alert alert-error";
+      msg.textContent = err.message;
+    }
+  });
+
+  render();
+  KPHDemo.syncBadges();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "UserID": 1,
+  "FirstName": "Juan",
+  "MiddleName": "Santos",
+  "LastName": "Dela Cruz",
+  "FullName": "Juan Santos Dela Cruz",
+  "Email": "juan.delacruz@email.com",
+  "PhoneNumber": "+639171234567",
+  "EmailVerifiedAt": "2026-01-15 10:30:00",
+  "PhoneVerifiedAt": "2026-01-15 10:35:00",
+  "AccountStatus": "Active",
+  "CreatedAt": "2026-01-15 10:00:00",
+  "LastLoginAt": "2026-04-14 08:20:00",
+  "Username": "juandelacruz",
+  "Bio": "Manila-based street & portrait photographer. Shooting on Sony Alpha & vintage M-mount glass.",
+  "ProfilePictureURL": null,
+  "DateOfBirth": "1999-05-14",
+  "Roles": ["Buyer", "Seller"],
+  "KYCStatus": "Approved"
+}

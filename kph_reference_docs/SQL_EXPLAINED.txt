@@ -1,0 +1,121 @@
+=====================================================================
+ KameraPH | Module 1 | THE 2 SQL FILES EXPLAINED
+=====================================================================
+
+You have two .sql files:
+  1. module_01_user_account_and_identity.sql   (REQUIRED: makes the tables)
+  2. seed_roles.sql                            (OPTIONAL: adds starting data)
+
+Run them in phpMyAdmin in this order: create an empty database named
+kph_user_account_identity, open it, go to the SQL tab, paste file 1,
+click Go. Then do the same with file 2.
+
+---------------------------------------------------------------------
+ FILE 1: module_01_user_account_and_identity.sql   (131 lines)
+---------------------------------------------------------------------
+WHAT IT IS
+  The database design. It creates the 8 tables of Module 1. Without it
+  the PHP classes have nowhere to save anything. It was given by the
+  group (from the ERD v5) and the classes were written to fit it.
+
+LINES 1-16  Comment box: what the file is, how to use it, and the list of
+            the 8 tables. It also says columns owned by other modules
+            are plain ID columns with no FOREIGN KEY, because each
+            module has its own database.
+
+EVERY TABLE STARTS THE SAME WAY
+  CREATE TABLE IF NOT EXISTS: "make the table only if it is not there
+  yet", so running the file twice does no harm.
+  Every table ends with ENGINE=InnoDB (the engine that supports foreign
+  keys and transactions) and utf8mb4 (can store any character).
+
+WORDS YOU WILL SEE
+  INT UNSIGNED         a whole number, 0 and up.
+  AUTO_INCREMENT       the database numbers the rows 1, 2, 3 by itself.
+  VARCHAR(n)           text with a maximum length.
+  TEXT                 long text.
+  DATETIME             a date and time.
+  NOT NULL / NULL      required / may be empty.
+  DEFAULT CURRENT_TIMESTAMP   filled with the current time automatically.
+  PRIMARY KEY          the unique ID of each row.
+  UNIQUE KEY           no two rows may have the same value.
+  FOREIGN KEY ... REFERENCES   this column must match a row in another
+                       table, so you cannot link to a user that does not
+                       exist.
+
+THE 8 TABLES
+  1. user (lines 18-35)
+     The account. FirstName, LastName, Email, PhoneNumber, PasswordHash,
+     the verified times, DateJoined, LastLoginAt, Status (Active or
+     Suspended) and SuspensionReason.
+     Email is UNIQUE. PasswordHash can be NULL, for accounts made with
+     Google/Facebook. PhoneNumber is NOT NULL but not unique (the PHP
+     code checks it).
+
+  2. role (lines 37-44)
+     buyer, seller, admin. RoleName is UNIQUE.
+
+  3. user_role (lines 46-56)
+     Which user has which role. The pair (UserID, RoleID) is UNIQUE, so
+     a user cannot get the same role twice. Both columns are foreign
+     keys.
+
+  4. user_profile (lines 58-70)
+     Username, Bio, ProfilePictureURL, DateOfBirth. UserID is UNIQUE, so
+     each user has only ONE profile.
+
+  5. user_address (lines 72-90)
+     Delivery addresses: recipient, phone, house/unit, street, barangay,
+     city, province, postal code, AddressType (Home/Work/Other) and
+     IsDefault (0 or 1). A user can have many.
+
+  6. auth_identity (lines 92-101)
+     The link to a Google or Facebook account: Provider and
+     ProviderUserID.
+
+  7. verification_token (lines 103-113)
+     One-time codes. Purpose, TokenHash (only the scrambled version),
+     ExpiresAt and UsedAt (empty until the code is used).
+
+  8. kyc_verification (lines 115-131)
+     The seller ID check. IDType, IDNumber (the comment says "stored
+     encrypted"), the two photo addresses, VerificationStatus
+     (Pending/Approved/Rejected), SubmittedAt, VerifiedAt,
+     ReviewedByAdminID and RejectionReason.
+     ReviewedByAdminID is a plain number from Module 10 (no foreign key).
+
+HOW THE TABLES CONNECT
+  user is the center. Every other table except role points to it with
+  UserID. user_role also points to role.
+
+THINGS THE DATABASE DOES NOT ENFORCE (the PHP code does)
+  - Phone numbers being unique.
+  - Status, Purpose, Provider, AddressType and VerificationStatus only
+    allow certain words. The database accepts any text, so Validator
+    and the classes check those.
+  - One Google account per user, and one default address per user.
+  This is a good thing to say if asked: "the database protects the
+  basics, and the classes enforce the business rules."
+
+---------------------------------------------------------------------
+ FILE 2: seed_roles.sql   (25 lines)
+---------------------------------------------------------------------
+WHAT IT IS
+  Starting data. It adds the three roles buyer, seller and admin. It is
+  OPTIONAL, because Role.php adds them by itself when needed
+  (ensureDefaults).
+
+LINES 7-17  Three INSERTs, one per role. Each one says: insert this role
+            WHERE NOT EXISTS a role with that name. So running the file
+            twice never creates duplicates.
+
+LINES 19-25 A commented-out example (the lines start with --, so they do
+            nothing). It shows how to make your FIRST admin by hand:
+            register a user, then run the INSERT with that UserID. The
+            API cannot create the very first admin, on purpose, so
+            nobody can make themselves an admin.
+
+WHY SQL AND PHP BOTH ADD THE ROLES
+  The PHP does it so the system works even if you forget this file. The
+  SQL file is a convenience, so the roles are visible in phpMyAdmin from
+  the start.

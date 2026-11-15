@@ -1,0 +1,23 @@
+/* ==========================================================
+   module.css  |  MY OWN STYLEE
+
+/* The header menu is filled in by kph-ui.js a moment after the page opens. */
+@media (max-width: 900px) {
+  .kph-nav { min-height: 36.5px; }
+}
+
+/* The kit's .form and .card styles would otherwise show elements marked hidden */
+[hidden] { display: none !important; }
+
+/* An empty "Loading..." line should not leave a blank gap above the content */
+.status-msg:empty { display: none; }
+
+/* "or" line and Google / Facebook buttons on Login and Register */
+.or-line { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 14px; }
+.or-line::before, .or-line::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.social-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* 6-digit code box */
+.code-input { letter-spacing: 8px; text-align: center; font-size: 20px; font-weight: 600; }
+.test-code { color: var(--muted); font-size: 14px; }
+.test-code b { color: var(--text); letter-spacing: 2px; }

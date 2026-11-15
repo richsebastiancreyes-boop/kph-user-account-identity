@@ -1,0 +1,8 @@
+{
+  "UserID": 1,
+  "KYCStatus": "Approved",
+  "SubmittedAt": "2026-02-01 12:00:00",
+  "ReviewedAt": "2026-02-02 15:30:00",
+  "RejectionReason": null,
+  "IDType": "PhilSys National ID"
+}
