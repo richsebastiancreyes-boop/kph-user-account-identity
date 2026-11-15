@@ -1,85 +1,128 @@
 # Progress Report & Handoff Guide — Module 1: User Account & Identity (`kph_user_account_identity`)
 
 **Prepared for:** Cristopher & Module 1 Group (User Account & Identity)  
-**Prepared by:** Collaborator from Module 5 (`kph_shopping_promotions` / Coupons & Promotions)  
+**Prepared by:** Rich / Collaborator from Module 5 (`kph_shopping_promotions` / Coupons & Promotions)  
 **Repository:** `kph_user_behavior_system` (`kph_user_account_identity`)
 
 ---
 
-## 1. Executive Summary — What Was Already Done vs. What Was Completed
+## 1. Where We Started From (Initial State from Google Drive)
 
-When we pulled your files from Google Drive (`BACKEND.zip`, `UI - IDK.zip`, `module_01_user_account_and_identity.sql`, `seed_roles.sql`, `BACKEND_LINE_BY_LINE.txt`, `SQL_EXPLAINED.txt`), your group had already completed **Part 1 (Database)**, **Part 2 (Backend PHP Classes)**, and the **Part 4 UI-first Frontend** (`USE_API = false` using `js/demo.js`).
+When we pulled your files from the shared Google Drive folder (`BACKEND.zip`, `UI - IDK.zip`, `module_01_user_account_and_identity.sql`, `seed_roles.sql`, `BACKEND_LINE_BY_LINE.txt`, and `SQL_EXPLAINED.txt`), your group had already completed a strong foundation:
 
-Starting right where your progress left off, here is everything that was built, connected, and verified for you:
-
-| Build Guide Stage | Previous Status (from Drive) | Completed Work |
-| :--- | :--- | :--- |
-| **Part 1: Database (`sql/`)** | Complete (`module_01_user_account_and_identity.sql` + `seed_roles.sql`) | Preserved 100% intact in `kph_user_account_identity/sql/`. |
-| **Part 2: Backend (`config/` & `classes/`)** | Complete (10 classes + `config.php` + `Database.php`) | Preserved all your original classes/methods so your `BACKEND_LINE_BY_LINE.txt` script still matches, and added session token helpers (`createSession`, `verifySession`, `revokeSession`, `checkResetToken`), UI-bridge helpers (`getAccountView`, `deleteAccount`, `resetPasswordByToken`, `validateNewContact`, `changeVerifiedContact`, `normalizeUiData`), plus `config.local.php` support for Azure MySQL. |
-| **Part 3: REST API (`api/` & `docs/`)** | Not started yet | Built all **10 REST API endpoints** (`helpers.php`, `login.php`, `users.php`, `social.php`, `addresses.php`, `verification.php`, `contact-change.php`, `password-reset.php`, `kyc.php`, `roles.php`, `activity.php`), sample JSON mocks (`api/mock/`), and full API docs (`docs/endpoints.md`). |
-| **Part 4: Frontend Integration (`web/`)** | UI-first mode (`USE_API = false`) | Switched all pages to **`USE_API = true`**, upgraded `web/js/api.js`, `web/js/config.js`, `web/js/kph-ui.js`, and `web/js/demo.js` to store and send `Authorization: Bearer <token>`, and wired seamless cross-module session handoff with Module 5 (`kph_shopping_promotions`). |
-| **Testing & Git Repo (`dev/tests/`)** | None | Added `dev/tests/backend_test.php` and `dev/tests/api_test.php` (including Module 1 → Module 5 session tests) and organized everything into a clean Git repository. |
-
----
-
-## 2. Detailed Breakdown of What Was Built
-
-### A. Part 3 — REST API Endpoints (`kph_user_account_identity/api/`)
-
-Every endpoint includes `api/helpers.php`, sets CORS and JSON headers, maps your custom PHP exceptions (`InvalidArgumentException` -> `400`, `AuthenticationException` -> `401`, `ForbiddenException` -> `403`, `OutOfBoundsException` -> `404`), and authenticates requests via `Authorization: Bearer <token>` (with `X-Test-User-Id` fallback for standalone testing):
-
-1. **[`api/helpers.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/helpers.php):**
-   - Shared JSON response helper (`respond()`), JSON body parser (`jsonBody()`), exception mapper (`handleApiException()`), Bearer token extractor (`getBearerToken()`), `currentUser()`, `requireUser()`, `isAdminUser()`, `hasModuleKey()`, and email/phone maskers.
-2. **[`api/login.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/login.php):**
-   - `POST`: Authenticates via `User::login($identifier, $password)`, creates a 24-hour Bearer session token in `verification_token` (`VerificationToken::createSession($userId)`), and returns `{ UserID, Token, User }`.
-   - `GET`: Verifies the current Bearer token and returns the logged-in user's full account view.
-   - `DELETE`: Revokes the current Bearer session token (`VerificationToken::revokeSession($token)`) on logout so neither Module 1 nor Module 5 accepts it anymore.
-3. **[`api/users.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/users.php):**
-   - `POST`: Registers a new user (`User::register()`), automatically issues a session token (`Token`), and returns `201 Created`.
-   - `GET`: Returns full account view (`User::getAccountView()`) when viewing own profile (or admin/module key), public view (`User::toPublic()`) when viewing another user, or filtered user list when `?all=1` / `?status=` / `?search=` is passed.
-   - `PUT`: Updates `user` fields (`FirstName`, `MiddleName`, `LastName`, `Email`, `PhoneNumber`) and `user_profile` fields (`Username`, `Bio`, `ProfilePictureURL`, `DateOfBirth`) together.
-   - `POST ?action=change-password`, `POST ?id=<id>&action=suspend`, `POST ?id=<id>&action=reactivate`.
-   - `DELETE`: Verifies password and deletes the user's account (`User::deleteAccount()`).
-4. **[`api/social.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/social.php):**
-   - `POST`: Handles simulated Google/Facebook sign-in from `social.html` (`User::socialLogin()`), auto-deriving `ProviderUserID` if omitted by the UI form, and returns `{ UserID, Token, IsNewUser, User }`.
-   - `GET`: Lists linked social accounts (`AuthIdentity::getByUser()`).
-5. **[`api/addresses.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/addresses.php):**
-   - `GET`, `POST`, `PUT ?id=<id>`, `DELETE ?id=<id>` for `UserAddress`.
-   - Bridges the UI form fields (`RecipientFullName`, combined `Street`, `Region`, `Province`, `City`, `Barangay`) with the database columns (`RecipientFirstName`, `RecipientLastName`, `HouseUnitNumber`, `Street`, etc.).
-6. **[`api/verification.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/verification.php):**
-   - `POST`: Sends a 6-digit verification code for the logged-in user's email or phone (`{ "Type": "email" | "phone" }`) and returns the test `code` when `show_token_in_response` is enabled.
-   - `PUT`: Verifies the 6-digit code (`User::verifyContact()`) and sets `EmailVerifiedAt` or `PhoneVerifiedAt`.
-7. **[`api/contact-change.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/contact-change.php):**
-   - `POST`: Validates a new email or phone number (`User::validateNewContact()`) and sends a 6-digit verification code.
-   - `PUT`: Verifies the code and updates the email/phone as verified (`User::changeVerifiedContact()`).
-8. **[`api/password-reset.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/password-reset.php):**
-   - `POST`: Creates a password reset token (`User::sendToken($identifier, "reset_password")`) and returns the test link token in dev mode.
-   - `GET ?token=<token>`: Validates whether a reset token is valid, expired, or already used (`VerificationToken::checkResetToken()`).
-   - `PUT`: Resets the user's password using the token (`User::resetPasswordByToken()`).
-9. **[`api/kyc.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/kyc.php):**
-   - `GET`: Returns current user's KYC status (`KycVerification::toStatusView()`), a specific submission (`?id=`), or all submissions (`?all=1&status=Pending`).
-   - `POST`: Submits KYC verification (supports both JSON from `kyc.html` and `multipart/form-data` image uploads via `UploadHelper`), approves KYC (`?id=<id>&action=approve` + auto-grants `seller` role), or rejects KYC (`?id=<id>&action=reject`).
-10. **[`api/roles.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/roles.php) & [`api/activity.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/api/activity.php):**
-    - `roles.php`: Lists roles, lists user roles (`?user_id=`), assigns roles (`POST`), and removes roles (`DELETE`).
-    - `activity.php`: Returns login/session history from `verification_token` (`?type=logins`) plus recently viewed products (`?type=viewed`) and search history (`?type=searches`).
+1. **Part 1 — Database Schema (`sql/`):**
+   - Complete 7-table schema (`user`, `user_profile`, `user_address`, `role`, `user_role`, `kyc_verification`, `auth_identity`, `verification_token`) and default role seed script (`buyer`, `seller`, `admin`).
+2. **Part 2 — Backend PHP Classes (`config/`, `classes/`):**
+   - Complete OOP classes using `PDO` + prepared statements, `Validator.php`, `Crypto.php` (AES-256-GCM encryption for KYC ID numbers and HMAC-SHA256 for OTP/reset codes), `Exceptions.php`, `User.php`, `UserProfile.php`, `UserAddress.php`, `KycVerification.php`, `VerificationToken.php`, `Role.php`, `UserRole.php`, `AuthIdentity.php`, and `ModuleApi.php`.
+3. **Part 4 — UI-First Frontend (`web/`):**
+   - All 13 responsive HTML pages (`login.html`, `register.html`, `social.html`, `forgot-password.html`, `reset-password.html`, `home.html`, `profile.html`, `profile-edit.html`, `addresses.html`, `kyc.html`, `delete-account.html`, `activity.html`, `wishlist.html`) were built and styled, running in browser-only demo mode (`const USE_API = false;` powered by `js/demo.js`).
+4. **What Was Missing:**
+   - **Part 3 (REST API `api/`)** had not been started yet, the **Part 4 Frontend** was not yet wired to real PHP endpoints (`USE_API = true`), and there was no **Cross-Module Session Token mechanism** to let other modules (like Module 5: Shopping & Promotions) recognize who logged in on Module 1.
 
 ---
 
-### B. Cross-Module Session Handoff (Module 1 ↔ Module 5)
+## 2. What Was Preserved (100% of Your Original Work)
 
-To allow Module 5 (`kph_shopping_promotions`) and all other KameraPH modules to share the logged-in user session with Module 1 without requiring PHP sticky sessions across different computers:
-
-1. **Database-Backed Bearer Token (`verification_token`):**
-   - On login/register/social sign-in, Module 1 generates a 64-character hex token (`bin2hex(random_bytes(32))`) and inserts `SHA-256(token)` into `verification_token` with `Purpose = 'session'` and a 24-hour expiry (`1440` minutes).
-2. **Frontend Token Storage & URL Handoff (`web/js/api.js` & `web/js/kph-ui.js`):**
-   - `KPHAuth.saveSession(token, user)` saves the token in `localStorage.getItem("kph-auth-token")` and the user object in `localStorage.getItem("kph-user")`.
-   - Every `kphFetch()`, `apiGet()`, and `apiSend()` call automatically sends `Authorization: Bearer <token>`.
-   - Clicking any cross-module navigation link in the header (e.g., **Deals** -> `kph_shopping_promotions/web/deals.html` or **Cart** -> `kph_shopping_promotions/web/cart.html`) appends `?token=<token>`, which `api.js` on the destination module captures into `localStorage` and strips from the URL bar using `history.replaceState`.
-3. **Shared Logout Revocation:**
-   - Clicking **Log out** calls `DELETE /api/login.php`, which sets `UsedAt = NOW(), ExpiresAt = NOW()` on the token in `verification_token` and clears `localStorage`, immediately logging the user out across all modules.
+- **All Pre-Existing UI Design & Layouts (`web/`):** Every single HTML file, CSS file (`kph.css`, `module.css`), image (`web/images/`), Region > Province > City > Barangay address picker (`addresses.html`), 6-digit verification box (`profile-edit.html`), and logout confirmation dialog (`demo.js`) was kept **100% intact**.
+- **All Original Backend Classes & Presentation Scripts (`classes/`, `kph_reference_docs/`):** Every class name, constant, and method signature documented in your `BACKEND_LINE_BY_LINE.txt`, `FUNCTION_LIST.txt`, and `SQL_EXPLAINED.txt` was preserved so your group can still use those exact scripts for your presentation/defense.
 
 ---
 
-### C. Preserving Your Presentation Notes (`kph_reference_docs/`)
+## 3. What Changed & What Was Added
 
-Your original study guides (`BACKEND_LINE_BY_LINE.txt`, `FUNCTION_LIST.txt`, and `SQL_EXPLAINED.txt`) are saved in `kph_reference_docs/` for easy reference during your defense/presentation. All original class names, constants, and method signatures in `classes/` were preserved so your line-by-line explanation remains accurate.
+### A. Built All Part 3 REST API Endpoints (`kph_user_account_identity/api/`)
+We built the complete 10-endpoint REST API layer plus sample mocks (`api/mock/`) and full documentation (`docs/endpoints.md`):
+- **`api/helpers.php`:** Shared CORS & JSON headers, request body parser (`jsonBody()`), exception-to-HTTP status mapper (`InvalidArgumentException` -> `400`, `AuthenticationException` -> `401`, `ForbiddenException` -> `403`, `OutOfBoundsException` -> `404`), and Bearer token authentication (`currentUser()`, `requireUser()`, `isAdminUser()`, `hasModuleKey()`).
+- **`api/login.php`:**
+  - `POST`: Authenticates email/phone + password (`User::login()`), creates a 24-hour Bearer session token, and returns `{ UserID, Token, User }`.
+  - `GET`: Validates the active Bearer token and returns the logged-in user's full account view.
+  - `DELETE`: Revokes the Bearer token on logout.
+- **`api/users.php`:**
+  - `POST`: Registers a new user (`User::register()`) and immediately returns `{ UserID, Token, User }`.
+  - `GET`: Returns full account view for owner/admin/module-key, public view for other users, or filtered user list (`?all=1`, `?status=`, `?search=`).
+  - `PUT`: Updates `user` fields (`FirstName`, `MiddleName`, `LastName`, `Email`, `PhoneNumber`) and `user_profile` fields (`Username`, `Bio`, `ProfilePictureURL`, `DateOfBirth`) in one request.
+  - `POST ?action=change-password`, `POST ?id=<id>&action=suspend`, `POST ?id=<id>&action=reactivate`.
+  - `DELETE`: Verifies password and deletes the user account (`User::deleteAccount()`).
+- **`api/social.php`:** Connects `social.html` (Google / Facebook sign-in & registration) to `User::socialLogin()` and issues a Bearer session token.
+- **`api/addresses.php`:** Connects `addresses.html` (`GET`, `POST`, `PUT ?id=`, `DELETE ?id=`) to `UserAddress`, automatically translating UI fields (`RecipientFullName`, combined `Street`, `Region`) into the database columns (`RecipientFirstName`, `RecipientLastName`, `HouseUnitNumber`, `Street`).
+- **`api/verification.php` & `api/contact-change.php`:** Connects the 6-digit email/phone verification and contact-change flows in `profile-edit.html` (`POST` to send code, `PUT` to confirm code).
+- **`api/password-reset.php`:** Connects `forgot-password.html` (`POST`) and `reset-password.html` (`GET ?token=` pre-check and `PUT` password update).
+- **`api/kyc.php`:** Connects `kyc.html` (`GET` status, `POST` submission, plus admin `?action=approve` which auto-assigns the `seller` role and `?action=reject`).
+- **`api/roles.php` & `api/activity.php`:** Role assignment endpoints and login/session/search/view activity history for `activity.html`.
+
+### B. Connected Frontend to Live API (`USE_API = true`)
+- Switched `const USE_API = false;` to `const USE_API = true;` across all HTML pages in `web/`.
+- Updated `web/js/api.js`, `web/js/config.js`, `web/js/kph-ui.js`, and `web/js/demo.js` so real API logins work seamlessly with the existing header badges and logout dialog.
+- Added `config/config.local.php` (gitignored) + `config/config.local.example.php` so each developer can connect to the shared **Azure MySQL** database (`kamaera-ph-mysql.mysql.database.azure.com`) or local XAMPP MySQL without overwriting Git-tracked config files.
+
+---
+
+## 4. New Feature Explained: Cross-Module Bearer Session Token Handoff (Why It Was Needed & How It Works)
+
+### Why It Was Needed
+In KameraPH's multi-module architecture, **Module 1 (`kph_user_account_identity`)** handles login and registration, while **Module 5 (`kph_shopping_promotions`)** handles the Shopping Cart, Deals, Coupons, and Seller Promotions (and other groups run Catalog, Orders, Auctions, etc.).
+- Because different groups may run their modules on different folders or even different localhost ports during integration testing, standard PHP `$_SESSION` cookies do not work across origins, and hardcoding `testUserId: "1"` in `config.js` meant every module always acted as User #1 regardless of who actually logged in.
+
+### How It Works
+1. **Token Creation (`VerificationToken::createSession`):**
+   - When a user logs in (`login.php`), registers (`users.php`), or uses Google/Facebook (`social.php`), Module 1 generates a 64-character random hex token (`bin2hex(random_bytes(32))`) and stores its **SHA-256 hash** (`hash("sha256", $token)`) in the shared `verification_token` table with `Purpose = 'session'` and a 24-hour expiration (`1440` minutes).
+2. **Browser Storage & Header Injection (`web/js/api.js`):**
+   - The frontend stores the token in `localStorage.getItem("kph-auth-token")` and the user profile in `localStorage.getItem("kph-user")`.
+   - Every `apiGet()` / `apiSend()` / `kphFetch()` request automatically attaches `Authorization: Bearer <token>`.
+3. **Cross-Module Link Handoff (`web/js/kph-ui.js`):**
+   - When a user clicks **Deals** or the **Cart icon** in the header, `kph-ui.js` appends `?token=<token>` to the link when navigating to another module.
+   - The receiving module's `api.js` automatically captures `?token=` into its own `localStorage`, strips `?token=` from the address bar via `history.replaceState`, and sends `Authorization: Bearer <token>` to its own PHP API.
+4. **Shared Database Validation & Instant Logout:**
+   - Both Module 1 (`VerificationToken::verifySession`) and Module 5 (`api/helpers.php`) validate the Bearer token against `verification_token` (`WHERE TokenHash = SHA2(:token, 256) AND ExpiresAt > NOW() AND UsedAt IS NULL`).
+   - When the user clicks **Log out**, `DELETE /api/login.php` sets `UsedAt = NOW(), ExpiresAt = NOW()` on that row in `verification_token`, immediately logging the user out of **all modules** at once.
+
+---
+
+## 5. Overall System Architecture
+
+```mermaid
+flowchart LR
+  subgraph Mod1["Module 1: User Account & Identity"]
+    UI1["Web UI (login.html, profile.html, etc.)"]
+    API1["REST API (/api/login.php, /api/users.php, ...)"]
+    CLS1["PHP Classes (User, VerificationToken, KycVerification, ...)"]
+  end
+
+  subgraph DB["Shared Azure MySQL (kph-database)"]
+    TUser["user / user_profile / user_role"]
+    TTok["verification_token (Purpose='session')"]
+    TCart["cart / cart_item / promotion / coupon"]
+  end
+
+  subgraph Mod5["Module 5: Shopping & Promotions"]
+    UI5["Web UI (deals.html, cart.html, promotions.html)"]
+    API5["REST API (/api/carts.php, /api/promotions.php, ...)"]
+  end
+
+  UI1 -->|"POST /login.php"| API1
+  API1 --> CLS1
+  CLS1 -->|"Insert SHA-256 Session Token"| TTok
+  CLS1 --> TUser
+  UI1 -->|"Header link + ?token=..."| UI5
+  UI5 -->|"Authorization: Bearer <token>"| API5
+  API5 -->|"Verify SHA2(token,256)"| TTok
+  API5 --> TCart
+```
+
+---
+
+## 6. Suggestions & Next Steps for Module 1 Group (Including UI Improvements)
+
+Everything required by the KameraPH Build Guide (Parts 1, 2, 3, and 4) is working and passing all 32 automated tests (`backend_test.php` and `api_test.php`). If your group wants to polish the project further before final presentation, here are recommended next steps:
+
+### UI / UX Improvements
+1. **Show Active User Avatar / Name in the Top Header (`kph-ui.js`):**
+   - Right now the top-right account icon is a static user silhouette. You can read `KPHAuth.getUser()` in `kph-ui.js` to display the logged-in user's `@Username` or initial badge next to the account icon (and show a **"Log in"** button when logged out).
+2. **Real Image File Upload Preview & Storage on `profile-edit.html` and `kyc.html`:**
+   - Currently `profile-edit.html` previews the selected avatar locally via `URL.createObjectURL(file)`, and `kyc.html` sends `IDType` and `IDNumber` as JSON. If you want real file uploads saved to `uploads/avatars/` and `uploads/kyc/`, you can switch the `kyc.html` and `profile-edit.html` forms to submit `FormData` (`multipart/form-data`) so PHP saves the uploaded `.jpg`/`.png` files to disk.
+3. **Admin KYC Review & User Management Page (`admin-kyc.html`):**
+   - Your backend and API already support listing pending KYC submissions (`GET /api/kyc.php?all=1&status=Pending`), approving/rejecting them (`POST /api/kyc.php?id=<id>&action=approve|reject`), and suspending/reactivating users (`POST /api/users.php?id=<id>&action=suspend|reactivate`). Adding a simple Admin Review table page in `web/` would let you demo approving a seller's ID live in the browser without using Postman/CLI!
+4. **Password Change Section on `profile-edit.html`:**
+   - The API already supports `POST /api/users.php?action=change-password` (`{ CurrentPassword, NewPassword }`). Adding a collapsible "Change password" card on `profile-edit.html` will let logged-in users update their password without going through the "Forgot password" flow.
+5. **Toast Notifications & Loading Spinners:**
+   - Add a subtle loading state (`Saving...` / disabled button) on all form submit buttons while waiting for Azure MySQL responses so users get instant visual feedback.
