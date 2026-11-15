@@ -78,7 +78,28 @@ In KameraPH's multi-module architecture, **Module 1 (`kph_user_account_identity`
 
 ---
 
-## 5. Overall System Architecture
+## 5. Azure Database Utilization (`Azure Database for MySQL 8.0 Flexible Server`)
+
+### Why We Use a Shared Azure Cloud Database Instead of Separate Local MySQL Instances
+If every group runs its own separate `localhost` XAMPP MySQL database, **Module 1's registered users, session tokens, addresses, and KYC statuses do not exist on Module 5's machine**, making real cross-module testing impossible. By pointing all modules to the shared **Azure Database for MySQL 8.0 Flexible Server** (`kph-database`):
+- Every module reads and writes against one **single source of truth**.
+- A user created in Module 1 (`register.html` / `POST /api/users.php`) immediately has a valid `UserID` for carts, coupons, orders, seller verification, and reviews across all other groups' modules.
+- Foreign keys across modules (e.g., `cart.UserID -> user.UserID`, `kyc_verification.ReviewedByAdminID -> admin_user.AdminID`, `orders.BuyerID -> user.UserID`) remain intact and enforced at the database level.
+
+### How It Is Wired in Module 1 (`config.php` + `config.local.php` + `Database.php`)
+1. **Safe Defaults + Local Overrides ([`config.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/config/config.php)):**
+   - `config/config.php` keeps safe `localhost` defaults tracked in Git, and automatically checks for `config/config.local.php` using `array_replace_recursive($config, $localConfig)`.
+   - Your local Azure credentials live in `config/config.local.php` (created from [`config.local.example.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/config/config.local.example.php)), which is excluded in `.gitignore` so database credentials are never exposed on GitHub.
+2. **PDO Connection ([`Database.php`](file:///c:/xampp/htdocs/kph_user_behavior_system/kph_user_account_identity/config/Database.php)):**
+   - Connects via PHP `PDO` (`mysql:host=...;port=3306;dbname=...;charset=utf8mb4`) using a singleton pattern (one connection reused for the entire HTTP request) with `ERRMODE_EXCEPTION`, `DEFAULT_FETCH_MODE => FETCH_ASSOC`, and native prepared statements (`EMULATE_PREPARES => false`).
+3. **Cross-Module Database Interactions:**
+   - **Shared `verification_token` table:** Module 1 inserts SHA-256 session tokens (`Purpose = 'session'`) on login/register/social sign-in; Module 5 (`kph_shopping_promotions/api/helpers.php`) queries the exact same `verification_token` table on Azure using `SHA2(:hashed, 256)` to authenticate `Authorization: Bearer <token>` requests without calling Module 1 over HTTP on every request.
+   - **Shared `user` & `cart` tables:** Verified during testing (`backend_test.php` and `api_test.php`), when deleting a test user in Module 1 (`User::deleteAccount()`), it cleans up child rows in `cart_item` / `cart` before deleting the parent `user` row so Azure MySQL's cross-module foreign key constraints stay satisfied.
+   - **Admin Foreign Keys (`kyc_verification`):** Approving KYC records `ReviewedByAdminID` referencing the shared `admin_user.AdminID` table (`AdminID = 1`) in `kph-database`.
+
+---
+
+## 6. Overall System Architecture
 
 ```mermaid
 flowchart LR
@@ -111,7 +132,7 @@ flowchart LR
 
 ---
 
-## 6. Suggestions & Next Steps for Module 1 Group (Including UI Improvements)
+## 7. Suggestions & Next Steps for Module 1 Group (Including UI Improvements)
 
 Everything required by the KameraPH Build Guide (Parts 1, 2, 3, and 4) is working and passing all 32 automated tests (`backend_test.php` and `api_test.php`). If your group wants to polish the project further before final presentation, here are recommended next steps:
 
